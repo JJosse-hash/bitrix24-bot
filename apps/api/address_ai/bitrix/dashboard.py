@@ -190,77 +190,203 @@ DASHBOARD_HTML = """
   <style>
     :root {
       color-scheme: dark;
-      --bg: #101214;
-      --panel: #171a1f;
-      --panel-2: #20252c;
-      --panel-3: #12161b;
-      --text: #e9edf2;
-      --muted: #9aa4b2;
-      --line: #2c333d;
-      --green: #36c27a;
-      --yellow: #e0b84f;
-      --red: #f06a6a;
-      --blue: #5aa7ff;
+      --bg: #0f1115;
+      --surface: #151922;
+      --surface-2: #1b212b;
+      --surface-3: #10141b;
+      --line: #2b3441;
+      --line-soft: #202833;
+      --text: #eef3f8;
+      --muted: #94a3b8;
+      --blue: #60a5fa;
+      --cyan: #2dd4bf;
+      --green: #35c981;
+      --amber: #f2b84b;
+      --red: #fb7185;
+      --violet: #a78bfa;
+      --shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
     }
     * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
     body {
       margin: 0;
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      min-width: 320px;
       background: var(--bg);
       color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: 0;
     }
+    button, input, select, textarea { font: inherit; }
     header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
       border-bottom: 1px solid var(--line);
-      background: #0c0e11;
+      background: rgba(15, 17, 21, 0.96);
+      backdrop-filter: blur(14px);
     }
-    .bar, main {
-      max-width: 1220px;
+    .wrap {
+      width: min(1440px, calc(100% - 32px));
       margin: 0 auto;
-      padding: 18px 22px;
     }
-    .bar {
+    .topbar {
+      display: grid;
+      grid-template-columns: minmax(260px, 1fr) auto;
+      gap: 18px;
+      align-items: center;
+      padding: 18px 0;
+    }
+    .brand {
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      gap: 16px;
+      gap: 14px;
+      min-width: 0;
     }
-    h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 0; }
-    .subtitle { margin-top: 4px; color: var(--muted); font-size: 13px; }
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      min-height: 28px;
-      padding: 4px 10px;
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      background: var(--panel);
+    .mark {
+      display: grid;
+      place-items: center;
+      width: 40px;
+      height: 40px;
+      border: 1px solid rgba(96, 165, 250, 0.5);
+      border-radius: 8px;
+      background: #142033;
+      color: var(--blue);
+      font-weight: 800;
+      letter-spacing: 0;
+    }
+    h1 { margin: 0; font-size: 19px; line-height: 1.2; }
+    .subtitle {
+      margin-top: 3px;
       color: var(--muted);
       font-size: 13px;
+      overflow: hidden;
+      text-overflow: ellipsis;
       white-space: nowrap;
     }
-    .pill.ok { color: var(--green); border-color: rgba(54, 194, 122, 0.45); }
-    .pill.live { color: var(--red); border-color: rgba(240, 106, 106, 0.5); }
+    .header-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+    main { padding: 22px 0 36px; }
     .grid {
       display: grid;
-      grid-template-columns: repeat(12, 1fr);
+      grid-template-columns: repeat(12, minmax(0, 1fr));
       gap: 14px;
-      margin-top: 18px;
+      align-items: start;
     }
     .panel {
       grid-column: span 6;
-      background: var(--panel);
+      min-width: 0;
       border: 1px solid var(--line);
       border-radius: 8px;
-      padding: 16px;
-      min-width: 0;
+      background: var(--surface);
+      box-shadow: var(--shadow);
     }
-    .panel.wide { grid-column: span 12; }
+    .panel.full { grid-column: span 12; }
     .panel.third { grid-column: span 4; }
-    h2 { margin: 0 0 12px; font-size: 15px; font-weight: 650; }
+    .panel-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--line-soft);
+    }
+    h2 {
+      margin: 0;
+      font-size: 14px;
+      font-weight: 750;
+      letter-spacing: 0;
+    }
+    .panel-body { padding: 16px; }
+    .kpis {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .kpi {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--surface);
+      padding: 14px;
+      min-height: 96px;
+    }
+    .kpi small {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 650;
+    }
+    .kpi strong {
+      display: block;
+      margin-top: 10px;
+      font-size: clamp(21px, 2.1vw, 28px);
+      line-height: 1.1;
+      overflow-wrap: anywhere;
+    }
+    .kpi span {
+      display: block;
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 12px;
+      overflow-wrap: anywhere;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 26px;
+      max-width: 100%;
+      padding: 3px 9px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: var(--surface-2);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 750;
+      line-height: 1.2;
+      white-space: nowrap;
+    }
+    .badge.live, .badge.error { color: var(--red); border-color: rgba(251, 113, 133, 0.45); background: rgba(251, 113, 133, 0.08); }
+    .badge.ok, .badge.claimed, .badge.candidate { color: var(--green); border-color: rgba(53, 201, 129, 0.45); background: rgba(53, 201, 129, 0.08); }
+    .badge.warn { color: var(--amber); border-color: rgba(242, 184, 75, 0.5); background: rgba(242, 184, 75, 0.08); }
+    .badge.info { color: var(--blue); border-color: rgba(96, 165, 250, 0.45); background: rgba(96, 165, 250, 0.08); }
+    .badge.violet { color: var(--violet); border-color: rgba(167, 139, 250, 0.45); background: rgba(167, 139, 250, 0.08); }
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+    button {
+      min-height: 38px;
+      border: 1px solid rgba(96, 165, 250, 0.55);
+      border-radius: 7px;
+      background: #173256;
+      color: #f3f8ff;
+      padding: 8px 13px;
+      font-size: 13px;
+      font-weight: 750;
+      cursor: pointer;
+    }
+    button.secondary {
+      background: var(--surface-3);
+      border-color: var(--line);
+      color: var(--text);
+    }
+    button.danger {
+      background: rgba(251, 113, 133, 0.12);
+      border-color: rgba(251, 113, 133, 0.45);
+      color: #ffdbe1;
+    }
+    button:disabled { opacity: 0.55; cursor: wait; }
     dl {
       display: grid;
-      grid-template-columns: 170px minmax(0, 1fr);
-      gap: 8px 12px;
+      grid-template-columns: 150px minmax(0, 1fr);
+      gap: 9px 12px;
       margin: 0;
       font-size: 13px;
     }
@@ -269,233 +395,379 @@ DASHBOARD_HTML = """
     code {
       display: inline-block;
       max-width: 100%;
-      padding: 2px 6px;
+      padding: 2px 7px;
       border-radius: 6px;
-      background: var(--panel-2);
-      color: #d7e6ff;
+      background: var(--surface-3);
+      color: #d8eaff;
       overflow-wrap: anywhere;
     }
-    .toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
-    button {
-      min-height: 40px;
-      border: 1px solid rgba(90, 167, 255, 0.45);
-      border-radius: 7px;
-      background: #19324f;
-      color: #edf6ff;
-      padding: 8px 14px;
-      font-weight: 650;
-      cursor: pointer;
-    }
-    button.secondary { background: #151a20; border-color: var(--line); color: var(--text); }
-    button:disabled { opacity: 0.55; cursor: wait; }
-    .metrics {
-      display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 10px;
-      margin-bottom: 12px;
-    }
-    .metric {
-      border: 1px solid var(--line);
-      border-radius: 7px;
-      padding: 10px;
-      background: var(--panel-3);
-      min-height: 68px;
-    }
-    .metric span { display: block; color: var(--muted); font-size: 12px; }
-    .metric strong { display: block; margin-top: 6px; font-size: 18px; overflow-wrap: anywhere; }
-    form, .settings-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr auto;
-      gap: 10px;
-      align-items: end;
-    }
     .settings-grid {
+      display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      align-items: start;
+      gap: 12px;
     }
-    label { display: grid; gap: 6px; color: var(--muted); font-size: 13px; }
+    .field-wide { grid-column: span 2; }
+    .field-full { grid-column: span 3; }
+    label {
+      display: grid;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+    }
     input, select, textarea {
       width: 100%;
       min-height: 40px;
       border: 1px solid var(--line);
       border-radius: 7px;
-      background: #111418;
+      background: #0f1319;
       color: var(--text);
       padding: 8px 10px;
       font-size: 14px;
+      letter-spacing: 0;
     }
-    textarea { min-height: 94px; resize: vertical; grid-column: span 2; }
-    pre {
-      min-height: 96px;
-      margin: 12px 0 0;
+    textarea { min-height: 106px; resize: vertical; line-height: 1.45; }
+    .section-title {
+      grid-column: span 3;
+      margin-top: 2px;
+      padding-top: 12px;
+      border-top: 1px solid var(--line-soft);
+      color: var(--text);
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+    .settings-actions {
+      grid-column: span 3;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding-top: 4px;
+    }
+    .muted { color: var(--muted); font-size: 12px; }
+    pre, .console {
+      min-height: 84px;
+      margin: 0;
       padding: 12px;
       border: 1px solid var(--line);
       border-radius: 7px;
-      background: #0d0f12;
+      background: #0b0e13;
       color: #dfe7ef;
       overflow: auto;
       white-space: pre-wrap;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+    .console.empty { color: var(--muted); }
+    .table-tools {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .filter {
+      max-width: 320px;
+      min-height: 36px;
       font-size: 13px;
     }
-    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .table-wrap {
+      overflow: auto;
+      border: 1px solid var(--line-soft);
+      border-radius: 8px;
+    }
+    table {
+      width: 100%;
+      min-width: 840px;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
     th, td {
-      border-bottom: 1px solid var(--line);
-      padding: 9px 8px;
+      border-bottom: 1px solid var(--line-soft);
+      padding: 10px 10px;
       text-align: left;
       vertical-align: top;
     }
-    th { color: var(--muted); font-weight: 600; }
+    tr:last-child td { border-bottom: 0; }
+    th {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      background: #141922;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+    }
+    tbody tr { cursor: default; }
+    tbody tr:hover { background: rgba(96, 165, 250, 0.06); }
     td { overflow-wrap: anywhere; }
-    .status-candidate, .status-claimed { color: var(--green); }
-    .status-error, .status-race_lost, .status-race_lost_after_answer { color: var(--red); }
-    .status-ignored { color: var(--muted); }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      min-width: 220px;
+    }
+    .action-chip {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 3px 7px;
+      border-radius: 6px;
+      background: #111827;
+      border: 1px solid var(--line);
+      color: #cbd5e1;
+      font-size: 11px;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .action-chip.good { color: var(--green); border-color: rgba(53, 201, 129, 0.35); }
+    .action-chip.skip { color: var(--amber); border-color: rgba(242, 184, 75, 0.35); }
+    .action-chip.danger { color: var(--red); border-color: rgba(251, 113, 133, 0.35); }
+    .manual-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 10px;
+      align-items: end;
+    }
+    .split {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 14px;
+    }
+    .status-line {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+    .linklike {
+      color: #cfe4ff;
+      text-decoration: none;
+    }
+    .empty-row td {
+      color: var(--muted);
+      text-align: center;
+      padding: 22px;
+    }
+    @media (max-width: 1100px) {
+      .kpis { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .panel, .panel.third { grid-column: span 12; }
+      .split { grid-template-columns: 1fr; }
+    }
     @media (max-width: 760px) {
-      .bar { align-items: flex-start; flex-direction: column; }
-      .panel, .panel.wide { grid-column: span 12; }
-      .metrics { grid-template-columns: 1fr 1fr; }
-      form, dl, .settings-grid { grid-template-columns: 1fr; }
-      textarea { grid-column: span 1; }
+      .wrap { width: min(100% - 20px, 1440px); }
+      .topbar { grid-template-columns: 1fr; }
+      .header-actions { justify-content: flex-start; }
+      .subtitle { white-space: normal; }
+      .kpis { grid-template-columns: 1fr 1fr; }
+      .settings-grid, dl, .manual-grid { grid-template-columns: 1fr; }
+      .field-wide, .field-full, .section-title, .settings-actions { grid-column: span 1; }
+      .panel-head { align-items: flex-start; flex-direction: column; }
     }
   </style>
 </head>
 <body>
   <header>
-    <div class="bar">
-      <div>
-        <h1>Bitrix24 Bot</h1>
-        <div class="subtitle">Escaneo automatico de ASIGNACION, filtro de chats nuevos y operacion segura.</div>
+    <div class="wrap topbar">
+      <div class="brand">
+        <div class="mark">B24</div>
+        <div>
+          <h1>Bitrix24 Bot</h1>
+          <div class="subtitle">ASIGNACION -> reclamar, fijar, mover etapa y mandar mensaje</div>
+        </div>
       </div>
-      <div id="mode" class="pill">Cargando</div>
+      <div class="header-actions">
+        <span id="mode" class="badge">Cargando</span>
+        <span id="worker-pill" class="badge">Worker</span>
+        <button id="scan-now-top" type="button">Escanear</button>
+        <button id="pause-scanner-top" class="secondary" type="button">Pausar</button>
+      </div>
     </div>
   </header>
 
-  <main>
+  <main class="wrap">
+    <section class="kpis">
+      <div class="kpi"><small>Modo</small><strong id="kpi-mode">-</strong><span id="kpi-mode-detail">-</span></div>
+      <div class="kpi"><small>Scanner</small><strong id="kpi-scanner">-</strong><span id="kpi-scanner-detail">-</span></div>
+      <div class="kpi"><small>Candidatos</small><strong id="kpi-candidates">-</strong><span>visibles en esta vuelta</span></div>
+      <div class="kpi"><small>Escaneos</small><strong id="kpi-scans">-</strong><span id="kpi-last-run">-</span></div>
+      <div class="kpi"><small>Ultimo claim</small><strong id="kpi-claimed">-</strong><span id="kpi-claimed-detail">-</span></div>
+    </section>
+
     <section class="grid">
-      <div class="panel">
-        <h2>Configuracion</h2>
-        <dl id="status"></dl>
+      <div class="panel full" id="error-panel" hidden>
+        <div class="panel-head">
+          <h2>Atencion</h2>
+          <span class="badge error">Error</span>
+        </div>
+        <div class="panel-body">
+          <pre id="scanner-error" class="console"></pre>
+        </div>
       </div>
 
       <div class="panel">
-        <h2>Servicio</h2>
-        <dl id="urls"></dl>
-      </div>
-
-      <div class="panel wide">
-        <h2>Configuracion En Vivo</h2>
-        <div class="settings-grid">
-          <label>Modo
-            <select id="setting-mode">
-              <option value="dry_run">dry_run</option>
-              <option value="live">live</option>
-            </select>
-          </label>
-          <label>Etapa ASIGNACION
-            <input id="setting-assignment-stage" placeholder="C16:UC_GIKKS8">
-          </label>
-          <label>Etapa ASIGNADO
-            <input id="setting-target-stage" placeholder="C16:UC_L8W7U1">
-          </label>
-          <label>Categoria
-            <input id="setting-category" inputmode="numeric" placeholder="16">
-          </label>
-          <label>Operador
-            <input id="setting-operator" inputmode="numeric" placeholder="2381716">
-          </label>
-          <label>Intervalo scanner
-            <input id="setting-interval" inputmode="decimal" placeholder="5">
-          </label>
-          <label>Limite por vuelta
-            <input id="setting-limit" inputmode="numeric" placeholder="8">
-          </label>
-          <label>Scanner activo
-            <select id="setting-scan-enabled">
-              <option value="true">true</option>
-              <option value="false">false</option>
-            </select>
-          </label>
-          <label>Conectores permitidos
-            <input id="setting-connectors" placeholder="opcional">
-          </label>
-          <label>Webhook Bitrix
-            <input id="setting-webhook" placeholder="pega URL completa solo si quieres cambiarla">
-          </label>
-          <label>Mensaje automatico
-            <textarea id="setting-message"></textarea>
-          </label>
-          <div style="align-self:end">
-            <button id="save-settings" type="button">Guardar</button>
-            <button id="clear-settings" class="secondary" type="button">Limpiar overrides</button>
+        <div class="panel-head">
+          <h2>Operacion</h2>
+          <div class="toolbar">
+            <button id="scan-now" type="button">Escanear ahora</button>
+            <button id="pause-scanner" class="secondary" type="button">Pausar</button>
+            <button id="resume-scanner" class="secondary" type="button">Reanudar</button>
           </div>
         </div>
-        <pre id="settings-output">Los cambios aqui son inmediatos. Para hacerlos permanentes, copialos despues a Render.</pre>
-      </div>
-
-      <div class="panel wide">
-        <h2>Scanner Automatico</h2>
-        <div class="toolbar">
-          <button id="scan-now" type="button">Escanear ahora</button>
-          <button id="pause-scanner" class="secondary" type="button">Pausar</button>
-          <button id="resume-scanner" class="secondary" type="button">Reanudar</button>
-        </div>
-        <div class="metrics">
-          <div class="metric"><span>Worker</span><strong id="scanner-running">-</strong></div>
-          <div class="metric"><span>Estado</span><strong id="scanner-state">-</strong></div>
-          <div class="metric"><span>Intervalo</span><strong id="scanner-interval">-</strong></div>
-          <div class="metric"><span>Candidatos</span><strong id="scanner-candidates">-</strong></div>
-        </div>
-        <pre id="scanner-error">Sin errores recientes.</pre>
-      </div>
-
-      <div class="panel wide">
-        <h2>Candidatos Actuales</h2>
-        <div style="overflow:auto">
-          <table>
-            <thead>
-              <tr>
-                <th>Detectado</th>
-                <th>Deal</th>
-                <th>Chat</th>
-                <th>Motivo</th>
-                <th>Acciones en live</th>
-              </tr>
-            </thead>
-            <tbody id="current-candidates"></tbody>
-          </table>
+        <div class="panel-body">
+          <dl id="status"></dl>
         </div>
       </div>
 
-      <div class="panel wide">
-        <h2>Historial Reciente</h2>
-        <div style="overflow:auto">
-          <table>
-            <thead>
-              <tr>
-                <th>Hora</th>
-                <th>Estado</th>
-                <th>Deal</th>
-                <th>Chat</th>
-                <th>Motivo</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody id="recent-results"></tbody>
-          </table>
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Servicio</h2>
+          <span id="token-pill" class="badge">Token</span>
+        </div>
+        <div class="panel-body">
+          <dl id="urls"></dl>
         </div>
       </div>
 
-      <div class="panel wide">
-        <h2>Prueba Manual</h2>
-        <form id="check-form">
-          <label>Deal ID
-            <input id="deal-id" inputmode="numeric" placeholder="2804388">
-          </label>
-          <label>Chat ID
-            <input id="chat-id" inputmode="numeric" placeholder="2758584">
-          </label>
-          <button id="check-button" type="submit">Probar</button>
-        </form>
-        <pre id="check-output">La prueba manual siempre corre en modo dry-run.</pre>
+      <div class="panel full">
+        <div class="panel-head">
+          <h2>Configuracion</h2>
+          <span id="override-pill" class="badge">Overrides</span>
+        </div>
+        <div class="panel-body">
+          <div class="settings-grid">
+            <div class="section-title">Operacion</div>
+            <label>Modo
+              <select id="setting-mode">
+                <option value="dry_run">dry_run</option>
+                <option value="live">live</option>
+              </select>
+            </label>
+            <label>Scanner activo
+              <select id="setting-scan-enabled">
+                <option value="true">true</option>
+                <option value="false">false</option>
+              </select>
+            </label>
+            <label>Conectores permitidos
+              <input id="setting-connectors" placeholder="opcional">
+            </label>
+
+            <div class="section-title">CRM</div>
+            <label>Etapa ASIGNACION
+              <input id="setting-assignment-stage" placeholder="C16:UC_GIKKS8">
+            </label>
+            <label>Etapa ASIGNADO
+              <input id="setting-target-stage" placeholder="C16:UC_L8W7U1">
+            </label>
+            <label>Categoria
+              <input id="setting-category" inputmode="numeric" placeholder="16">
+            </label>
+            <label>Operador
+              <input id="setting-operator" inputmode="numeric" placeholder="2381716">
+            </label>
+            <label>Intervalo scanner
+              <input id="setting-interval" inputmode="decimal" placeholder="5">
+            </label>
+            <label>Limite por vuelta
+              <input id="setting-limit" inputmode="numeric" placeholder="8">
+            </label>
+
+            <div class="section-title">Bitrix</div>
+            <label class="field-full">Webhook Bitrix
+              <input id="setting-webhook" placeholder="pega URL completa solo si quieres cambiarla">
+            </label>
+            <label class="field-full">Mensaje automatico
+              <textarea id="setting-message"></textarea>
+            </label>
+
+            <div class="settings-actions">
+              <div class="muted" id="settings-note">Cambios en vivo; Render los borra al redeploy si no los copias a variables.</div>
+              <div class="toolbar">
+                <button id="save-settings" type="button">Guardar cambios</button>
+                <button id="clear-settings" class="secondary" type="button">Limpiar overrides</button>
+              </div>
+            </div>
+          </div>
+          <pre id="settings-output" class="console empty">Sin cambios pendientes.</pre>
+        </div>
+      </div>
+
+      <div class="panel full">
+        <div class="panel-head">
+          <h2>Candidatos Actuales</h2>
+          <span id="candidate-count" class="badge info">0</span>
+        </div>
+        <div class="panel-body">
+          <div class="table-tools">
+            <div class="muted">Click en una fila carga Deal/Chat en prueba manual.</div>
+            <input id="candidate-filter" class="filter" placeholder="Filtrar candidatos">
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Hora</th>
+                  <th>Deal</th>
+                  <th>Chat</th>
+                  <th>Motivo</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="current-candidates"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel full">
+        <div class="panel-head">
+          <h2>Historial Reciente</h2>
+          <div class="status-line">
+            <span id="history-count" class="badge">0</span>
+            <input id="history-filter" class="filter" placeholder="Filtrar historial">
+          </div>
+        </div>
+        <div class="panel-body">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Hora</th>
+                  <th>Estado</th>
+                  <th>Deal</th>
+                  <th>Chat</th>
+                  <th>Motivo</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="recent-results"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel full">
+        <div class="panel-head">
+          <h2>Prueba Manual</h2>
+          <span class="badge violet">dry_run</span>
+        </div>
+        <div class="panel-body split">
+          <form id="check-form" class="manual-grid">
+            <label>Deal ID
+              <input id="deal-id" inputmode="numeric" placeholder="2804388">
+            </label>
+            <label>Chat ID
+              <input id="chat-id" inputmode="numeric" placeholder="2758584">
+            </label>
+            <button id="check-button" type="submit">Probar</button>
+          </form>
+          <pre id="check-output" class="console empty">Sin prueba ejecutada.</pre>
+        </div>
       </div>
     </section>
   </main>
@@ -504,9 +776,16 @@ DASHBOARD_HTML = """
     const params = new URLSearchParams(location.search);
     const token = params.get("token") || "";
     const headers = token ? {"x-dashboard-token": token} : {};
+    let scannerCache = {current_candidates: [], recent: []};
 
-    function row(key, value) {
-      return `<dt>${key}</dt><dd>${value || "<span style='color: var(--red)'>Falta</span>"}</dd>`;
+    function esc(value) {
+      return String(value ?? "").replace(/[&<>"']/g, (char) => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        "\"": "&quot;",
+        "'": "&#39;",
+      }[char]));
     }
 
     function fmt(value) {
@@ -515,69 +794,149 @@ DASHBOARD_HTML = """
 
     function fmtTime(value) {
       if (!value) return "-";
-      try { return new Date(value).toLocaleTimeString(); } catch { return value; }
+      try { return new Date(value).toLocaleTimeString([], {hour: "2-digit", minute: "2-digit", second: "2-digit"}); }
+      catch { return value; }
+    }
+
+    function compactTime(value) {
+      if (!value) return "-";
+      try { return new Date(value).toLocaleTimeString([], {hour: "2-digit", minute: "2-digit"}); }
+      catch { return value; }
+    }
+
+    function row(key, value) {
+      const rendered = value || "<span class='badge error'>Falta</span>";
+      return `<dt>${esc(key)}</dt><dd>${rendered}</dd>`;
+    }
+
+    function statusBadge(status) {
+      const safe = esc(status || "-");
+      const cls = ["claimed", "candidate"].includes(status) ? "ok"
+        : ["error", "race_lost", "race_lost_after_answer"].includes(status) ? "error"
+        : status === "ignored" ? "" : "info";
+      return `<span class="badge ${cls}">${safe}</span>`;
+    }
+
+    function actionChips(actions) {
+      const list = actions || [];
+      if (!list.length) return "<span class='muted'>-</span>";
+      return `<div class="actions">${list.map((action) => {
+        const text = esc(action);
+        const cls = action.includes("skipped") ? "skip" : action.includes("error") ? "danger" : "good";
+        return `<span class="action-chip ${cls}">${text}</span>`;
+      }).join("")}</div>`;
+    }
+
+    function fillManual(dealId, chatId) {
+      if (dealId) document.querySelector("#deal-id").value = dealId;
+      if (chatId) document.querySelector("#chat-id").value = chatId;
+      document.querySelector("#check-output").textContent = `Cargado Deal ${dealId || "-"} / Chat ${chatId || "-"}`;
+      document.querySelector("#check-output").classList.remove("empty");
     }
 
     async function loadStatus() {
       const response = await fetch("/api/bitrix/status", {headers});
       if (!response.ok) {
         document.querySelector("#mode").textContent = "Sin acceso";
-        document.querySelector("#status").innerHTML = row("Error", await response.text());
+        document.querySelector("#status").innerHTML = row("Error", esc(await response.text()));
         return;
       }
       const data = await response.json();
       const mode = document.querySelector("#mode");
       mode.textContent = data.is_live ? "LIVE" : "DRY RUN";
-      mode.className = data.is_live ? "pill live" : "pill ok";
+      mode.className = data.is_live ? "badge live" : "badge ok";
+      document.querySelector("#kpi-mode").textContent = data.is_live ? "LIVE" : "DRY";
+      document.querySelector("#kpi-mode-detail").textContent = data.is_live ? "acciones reales activas" : "solo simulacion";
+      document.querySelector("#token-pill").textContent = data.dashboard_token_enabled ? "Protegido" : "Abierto";
+      document.querySelector("#token-pill").className = data.dashboard_token_enabled ? "badge ok" : "badge warn";
+      const overrides = data.runtime_overrides || [];
+      document.querySelector("#override-pill").textContent = overrides.length ? `${overrides.length} activos` : "Sin overrides";
+      document.querySelector("#override-pill").className = overrides.length ? "badge warn" : "badge";
 
       document.querySelector("#status").innerHTML = [
-        row("Modo", `<code>${data.mode}</code>`),
-        row("Webhook Bitrix", data.webhook_configured ? `<code>${data.webhook_preview}</code>` : ""),
-        row("ASIGNACION", data.assignment_stage_id ? `<code>${data.assignment_stage_id}</code>` : ""),
-        row("Categoria", data.category_id ?? ""),
-        row("Operador", data.operator_user_id ?? ""),
-        row("Mover a ASIGNADO", data.target_stage_id ? `<code>${data.target_stage_id}</code>` : ""),
-        row("Mensaje inicial", data.greeting_enabled ? "Configurado" : "Sin mensaje"),
-        row("Scanner", data.scan_enabled ? `Cada ${data.scan_interval_seconds}s, limite ${data.scan_limit}` : "Desactivado"),
-        row("Overrides", (data.runtime_overrides || []).join(", ") || "Ninguno"),
+        row("Webhook", data.webhook_configured ? `<code>${esc(data.webhook_preview)}</code>` : ""),
+        row("ASIGNACION", data.assignment_stage_id ? `<code>${esc(data.assignment_stage_id)}</code>` : ""),
+        row("ASIGNADO", data.target_stage_id ? `<code>${esc(data.target_stage_id)}</code>` : ""),
+        row("Categoria", esc(data.category_id ?? "")),
+        row("Operador", esc(data.operator_user_id ?? "")),
+        row("Mensaje", data.greeting_enabled ? "<span class='badge ok'>Configurado</span>" : ""),
+        row("Scanner", data.scan_enabled ? `<span class='badge ok'>${esc(data.scan_interval_seconds)}s / ${esc(data.scan_limit)}</span>` : "<span class='badge warn'>Desactivado</span>"),
+        row("Overrides", overrides.length ? overrides.map(esc).join(", ") : "Ninguno"),
       ].join("");
 
       document.querySelector("#urls").innerHTML = [
-        row("Health", `<code>${data.health_url}</code>`),
-        row("Eventos", `<code>${data.event_url}</code>`),
-        row("Dashboard token", data.dashboard_token_enabled ? "Activado" : "Sin proteger"),
+        row("Health", `<code>${esc(data.health_url)}</code>`),
+        row("Eventos", `<code>${esc(data.event_url)}</code>`),
+        row("Conectores", (data.allowed_connectors || []).length ? data.allowed_connectors.map(esc).join(", ") : "Todos"),
       ].join("");
     }
 
     function renderScanner(data) {
-      document.querySelector("#scanner-running").textContent = data.task_running ? "Activo" : "Detenido";
-      document.querySelector("#scanner-state").textContent = data.paused ? "Pausado" : (data.enabled ? "Escaneando" : "Desactivado");
-      document.querySelector("#scanner-interval").textContent = `${data.interval_seconds}s`;
-      document.querySelector("#scanner-candidates").textContent = (data.current_candidates || []).length;
-      document.querySelector("#scanner-error").textContent = data.last_error || "Sin errores recientes.";
+      scannerCache = data;
+      const candidates = data.current_candidates || [];
+      const recent = data.recent || [];
+      const claimed = recent.find((item) => item.status === "claimed");
+      const state = data.paused ? "Pausado" : (data.enabled ? "Escaneando" : "Desactivado");
+      const running = data.task_running ? "Activo" : "Detenido";
+      document.querySelector("#worker-pill").textContent = running;
+      document.querySelector("#worker-pill").className = data.task_running ? "badge ok" : "badge warn";
+      document.querySelector("#kpi-scanner").textContent = state;
+      document.querySelector("#kpi-scanner-detail").textContent = `${running} / cada ${data.interval_seconds}s / limite ${data.limit}`;
+      document.querySelector("#kpi-candidates").textContent = candidates.length;
+      document.querySelector("#kpi-scans").textContent = data.scan_count ?? "-";
+      document.querySelector("#kpi-last-run").textContent = data.last_finished_at ? `ultimo ${compactTime(data.last_finished_at)}` : "sin cierre aun";
+      document.querySelector("#kpi-claimed").textContent = claimed ? compactTime(claimed.timestamp) : "-";
+      document.querySelector("#kpi-claimed-detail").textContent = claimed ? `deal ${claimed.deal_id || "-"} / chat ${claimed.chat_id || "-"}` : "sin claims recientes";
+      document.querySelector("#candidate-count").textContent = String(candidates.length);
+      document.querySelector("#history-count").textContent = `${recent.length} filas`;
+      const errorPanel = document.querySelector("#error-panel");
+      const errorBox = document.querySelector("#scanner-error");
+      errorPanel.hidden = !data.last_error;
+      errorBox.textContent = data.last_error || "";
+      renderCandidates();
+      renderHistory();
+    }
 
-      const currentRows = (data.current_candidates || []).map((item) => `
-        <tr>
+    function rowMatches(item, query) {
+      if (!query) return true;
+      return JSON.stringify(item).toLowerCase().includes(query.toLowerCase());
+    }
+
+    function renderCandidates() {
+      const query = document.querySelector("#candidate-filter").value.trim();
+      const rows = (scannerCache.current_candidates || []).filter((item) => rowMatches(item, query)).map((item) => `
+        <tr data-deal="${esc(item.deal_id || "")}" data-chat="${esc(item.chat_id || "")}">
           <td>${fmtTime(item.timestamp)}</td>
-          <td>${fmt(item.deal_id)}</td>
-          <td>${fmt(item.chat_id)}</td>
-          <td>${item.reason}</td>
-          <td>${(item.actions || []).join(", ") || "-"}</td>
+          <td><code>${esc(fmt(item.deal_id))}</code></td>
+          <td><code>${esc(fmt(item.chat_id))}</code></td>
+          <td>${esc(item.reason)}</td>
+          <td>${actionChips(item.actions)}</td>
         </tr>
       `).join("");
-      document.querySelector("#current-candidates").innerHTML = currentRows || "<tr><td colspan='5'>No hay candidatos actuales.</td></tr>";
+      document.querySelector("#current-candidates").innerHTML = rows || "<tr class='empty-row'><td colspan='5'>Sin candidatos activos.</td></tr>";
+      bindTableClicks("#current-candidates");
+    }
 
-      const rows = (data.recent || []).map((item) => `
-        <tr>
+    function renderHistory() {
+      const query = document.querySelector("#history-filter").value.trim();
+      const rows = (scannerCache.recent || []).filter((item) => rowMatches(item, query)).map((item) => `
+        <tr data-deal="${esc(item.deal_id || "")}" data-chat="${esc(item.chat_id || "")}">
           <td>${fmtTime(item.timestamp)}</td>
-          <td class="status-${item.status}">${item.status}</td>
-          <td>${fmt(item.deal_id)}</td>
-          <td>${fmt(item.chat_id)}</td>
-          <td>${item.reason}</td>
-          <td>${(item.actions || []).join(", ") || "-"}</td>
+          <td>${statusBadge(item.status)}</td>
+          <td><code>${esc(fmt(item.deal_id))}</code></td>
+          <td><code>${esc(fmt(item.chat_id))}</code></td>
+          <td>${esc(item.reason)}</td>
+          <td>${actionChips(item.actions)}</td>
         </tr>
       `).join("");
-      document.querySelector("#recent-results").innerHTML = rows || "<tr><td colspan='6'>Sin resultados todavia.</td></tr>";
+      document.querySelector("#recent-results").innerHTML = rows || "<tr class='empty-row'><td colspan='6'>Sin historial.</td></tr>";
+      bindTableClicks("#recent-results");
+    }
+
+    function bindTableClicks(selector) {
+      document.querySelectorAll(`${selector} tr[data-deal]`).forEach((row) => {
+        row.addEventListener("click", () => fillManual(row.dataset.deal, row.dataset.chat));
+      });
     }
 
     async function loadScanner() {
@@ -607,6 +966,7 @@ DASHBOARD_HTML = """
       const button = document.querySelector("#save-settings");
       const output = document.querySelector("#settings-output");
       button.disabled = true;
+      output.classList.remove("empty");
       output.textContent = "Guardando...";
       const body = {
         BITRIX_AUTOMATION_MODE: document.querySelector("#setting-mode").value,
@@ -621,9 +981,7 @@ DASHBOARD_HTML = """
         BITRIX_GREETING_MESSAGE: document.querySelector("#setting-message").value,
       };
       const webhookValue = document.querySelector("#setting-webhook").value.trim();
-      if (webhookValue && !webhookValue.includes("...")) {
-        body.BITRIX_WEBHOOK_BASE_URL = webhookValue;
-      }
+      if (webhookValue && !webhookValue.includes("...")) body.BITRIX_WEBHOOK_BASE_URL = webhookValue;
       try {
         const response = await fetch("/api/bitrix/settings", {
           method: "PUT",
@@ -632,8 +990,7 @@ DASHBOARD_HTML = """
         });
         const data = await response.json();
         output.textContent = JSON.stringify(data, null, 2);
-        await loadStatus();
-        await loadScanner();
+        await Promise.all([loadSettings(), loadStatus(), loadScanner()]);
       } catch (error) {
         output.textContent = String(error);
       } finally {
@@ -643,13 +1000,12 @@ DASHBOARD_HTML = """
 
     async function clearSettings() {
       const output = document.querySelector("#settings-output");
+      output.classList.remove("empty");
       output.textContent = "Limpiando overrides...";
       const response = await fetch("/api/bitrix/settings", {method: "DELETE", headers});
       const data = await response.json();
       output.textContent = JSON.stringify(data, null, 2);
-      await loadSettings();
-      await loadStatus();
-      await loadScanner();
+      await Promise.all([loadSettings(), loadStatus(), loadScanner()]);
     }
 
     async function postScanner(path) {
@@ -665,6 +1021,7 @@ DASHBOARD_HTML = """
       const button = document.querySelector("#check-button");
       const output = document.querySelector("#check-output");
       button.disabled = true;
+      output.classList.remove("empty");
       output.textContent = "Probando...";
       const body = {
         deal_id: document.querySelector("#deal-id").value.trim(),
@@ -685,10 +1042,14 @@ DASHBOARD_HTML = """
     });
 
     document.querySelector("#scan-now").addEventListener("click", async () => postScanner("/api/bitrix/scan"));
+    document.querySelector("#scan-now-top").addEventListener("click", async () => postScanner("/api/bitrix/scan"));
     document.querySelector("#pause-scanner").addEventListener("click", async () => postScanner("/api/bitrix/scanner/pause"));
+    document.querySelector("#pause-scanner-top").addEventListener("click", async () => postScanner("/api/bitrix/scanner/pause"));
     document.querySelector("#resume-scanner").addEventListener("click", async () => postScanner("/api/bitrix/scanner/resume"));
     document.querySelector("#save-settings").addEventListener("click", saveSettings);
     document.querySelector("#clear-settings").addEventListener("click", clearSettings);
+    document.querySelector("#candidate-filter").addEventListener("input", renderCandidates);
+    document.querySelector("#history-filter").addEventListener("input", renderHistory);
 
     loadStatus();
     loadScanner();
