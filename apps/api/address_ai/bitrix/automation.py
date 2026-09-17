@@ -278,40 +278,17 @@ class BitrixOpenLineAutomation:
         self.client.call("imopenlines.operator.answer", {"CHAT_ID": chat_id})
         actions.append("answered_dialog")
 
-        second_check = self.evaluate_chat(chat_id)
-        if not second_check.eligible:
-            return AutomationResult(
-                status="race_lost_after_answer",
-                reason=second_check.reason,
-                deal_id=deal_id,
-                chat_id=chat_id,
-                dry_run=False,
-                actions=tuple(actions),
-            )
-
         fields: dict[str, Any] = {}
         if self.config.operator_user_id is not None:
             fields["assignedById"] = self.config.operator_user_id
         if self.config.target_stage_id:
             fields["stageId"] = self.config.target_stage_id
         if fields:
-            self.client.call(
-                "crm.item.update",
-                {"entityTypeId": 2, "id": deal_id, "fields": fields},
-            )
+            self.update_deal(deal_id, fields)
             actions.append("updated_deal")
 
         if self.config.greeting_message and self.config.operator_user_id is not None:
-            self.client.call(
-                "imopenlines.crm.message.add",
-                {
-                    "CRM_ENTITY_TYPE": "deal",
-                    "CRM_ENTITY": deal_id,
-                    "USER_ID": self.config.operator_user_id,
-                    "CHAT_ID": chat_id,
-                    "MESSAGE": self.config.greeting_message,
-                },
-            )
+            self.send_openline_message(deal_id, chat_id)
             actions.append("sent_message")
 
         return AutomationResult(
@@ -328,6 +305,38 @@ class BitrixOpenLineAutomation:
         if isinstance(result, dict) and "item" in result:
             return result["item"]
         return result or {}
+
+    def update_deal(self, deal_id: int, fields: dict[str, Any]) -> None:
+        self.client.call(
+            "crm.item.update",
+            {"entityTypeId": 2, "id": deal_id, "fields": fields},
+        )
+
+    def send_openline_message(self, deal_id: int, chat_id: int) -> None:
+        message = self.config.greeting_message or ""
+        user_id = self.config.operator_user_id
+        if user_id is None or not message:
+            return
+
+        try:
+            self.client.call(
+                "imopenlines.crm.message.add",
+                {
+                    "CRM_ENTITY_TYPE": "deal",
+                    "CRM_ENTITY": deal_id,
+                    "USER_ID": user_id,
+                    "CHAT_ID": chat_id,
+                    "MESSAGE": message,
+                },
+            )
+        except Exception:
+            self.client.call(
+                "im.message.add",
+                {
+                    "DIALOG_ID": f"chat{chat_id}",
+                    "MESSAGE": message,
+                },
+            )
 
     def deal_is_in_assignment(self, deal: dict[str, Any]) -> bool:
         if str(deal.get("stageId") or "") != self.config.assignment_stage_id:
