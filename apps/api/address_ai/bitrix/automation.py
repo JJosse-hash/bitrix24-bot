@@ -148,10 +148,15 @@ def update_runtime_config_overrides(values: dict[str, Any]) -> dict[str, str]:
             if key not in allowed_keys:
                 continue
             text = "" if value is None else str(value)
-            if key in EDITABLE_SECRET_KEYS and (not text or text.startswith("***")):
+            if key in EDITABLE_SECRET_KEYS and (not text or text.startswith("***") or "..." in text):
                 continue
             RUNTIME_CONFIG_OVERRIDES[key] = text
         return dict(RUNTIME_CONFIG_OVERRIDES)
+
+
+def clear_runtime_config_overrides() -> None:
+    with RUNTIME_CONFIG_LOCK:
+        RUNTIME_CONFIG_OVERRIDES.clear()
 
 
 class BitrixOpenLineAutomation:

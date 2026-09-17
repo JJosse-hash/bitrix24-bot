@@ -10,6 +10,7 @@ from fastapi.responses import HTMLResponse
 from address_ai.bitrix.automation import (
     BitrixAutomationConfig,
     BitrixOpenLineAutomation,
+    clear_runtime_config_overrides,
     get_runtime_config_overrides,
     update_runtime_config_overrides,
 )
@@ -83,6 +84,13 @@ async def bitrix_settings_update(request: Request) -> dict[str, Any]:
     if not isinstance(body, dict):
         raise HTTPException(status_code=400, detail="Expected JSON object")
     update_runtime_config_overrides(body)
+    return bitrix_settings(request)
+
+
+@router.delete("/api/bitrix/settings")
+def bitrix_settings_clear(request: Request) -> dict[str, Any]:
+    verify_dashboard_access(request)
+    clear_runtime_config_overrides()
     return bitrix_settings(request)
 
 
@@ -410,13 +418,14 @@ DASHBOARD_HTML = """
             <input id="setting-connectors" placeholder="opcional">
           </label>
           <label>Webhook Bitrix
-            <input id="setting-webhook" placeholder="dejar masked para no cambiar">
+            <input id="setting-webhook" placeholder="pega URL completa solo si quieres cambiarla">
           </label>
           <label>Mensaje automatico
             <textarea id="setting-message"></textarea>
           </label>
           <div style="align-self:end">
             <button id="save-settings" type="button">Guardar</button>
+            <button id="clear-settings" class="secondary" type="button">Limpiar overrides</button>
           </div>
         </div>
         <pre id="settings-output">Los cambios aqui son inmediatos. Para hacerlos permanentes, copialos despues a Render.</pre>
@@ -609,9 +618,12 @@ DASHBOARD_HTML = """
         BITRIX_SCAN_LIMIT: document.querySelector("#setting-limit").value.trim(),
         BITRIX_SCAN_ENABLED: document.querySelector("#setting-scan-enabled").value,
         BITRIX_ALLOWED_CONNECTORS: document.querySelector("#setting-connectors").value.trim(),
-        BITRIX_WEBHOOK_BASE_URL: document.querySelector("#setting-webhook").value.trim(),
         BITRIX_GREETING_MESSAGE: document.querySelector("#setting-message").value,
       };
+      const webhookValue = document.querySelector("#setting-webhook").value.trim();
+      if (webhookValue && !webhookValue.includes("...")) {
+        body.BITRIX_WEBHOOK_BASE_URL = webhookValue;
+      }
       try {
         const response = await fetch("/api/bitrix/settings", {
           method: "PUT",
@@ -627,6 +639,17 @@ DASHBOARD_HTML = """
       } finally {
         button.disabled = false;
       }
+    }
+
+    async function clearSettings() {
+      const output = document.querySelector("#settings-output");
+      output.textContent = "Limpiando overrides...";
+      const response = await fetch("/api/bitrix/settings", {method: "DELETE", headers});
+      const data = await response.json();
+      output.textContent = JSON.stringify(data, null, 2);
+      await loadSettings();
+      await loadStatus();
+      await loadScanner();
     }
 
     async function postScanner(path) {
@@ -665,6 +688,7 @@ DASHBOARD_HTML = """
     document.querySelector("#pause-scanner").addEventListener("click", async () => postScanner("/api/bitrix/scanner/pause"));
     document.querySelector("#resume-scanner").addEventListener("click", async () => postScanner("/api/bitrix/scanner/resume"));
     document.querySelector("#save-settings").addEventListener("click", saveSettings);
+    document.querySelector("#clear-settings").addEventListener("click", clearSettings);
 
     loadStatus();
     loadScanner();
