@@ -3,6 +3,7 @@ from __future__ import annotations
 import os
 import time
 from dataclasses import dataclass
+from threading import Lock
 from typing import Any, Protocol
 
 
@@ -23,6 +24,22 @@ HANDLED_SYSTEM_PHRASES = (
     "respondio",
     "respondió",
 )
+
+RUNTIME_CONFIG_LOCK = Lock()
+RUNTIME_CONFIG_OVERRIDES: dict[str, str] = {}
+EDITABLE_CONFIG_KEYS = {
+    "BITRIX_ASSIGNMENT_STAGE_ID",
+    "BITRIX_CATEGORY_ID",
+    "BITRIX_AUTOMATION_MODE",
+    "BITRIX_OPERATOR_USER_ID",
+    "BITRIX_TARGET_STAGE_ID",
+    "BITRIX_GREETING_MESSAGE",
+    "BITRIX_ALLOWED_CONNECTORS",
+    "BITRIX_SCAN_ENABLED",
+    "BITRIX_SCAN_INTERVAL_SECONDS",
+    "BITRIX_SCAN_LIMIT",
+}
+EDITABLE_SECRET_KEYS = {"BITRIX_WEBHOOK_BASE_URL"}
 
 
 class BitrixApi(Protocol):
@@ -47,26 +64,26 @@ class BitrixAutomationConfig:
 
     @classmethod
     def from_env(cls) -> "BitrixAutomationConfig":
-        category_id = _optional_int(os.getenv("BITRIX_CATEGORY_ID"))
-        operator_user_id = _optional_int(os.getenv("BITRIX_OPERATOR_USER_ID"))
+        category_id = _optional_int(get_config_value("BITRIX_CATEGORY_ID"))
+        operator_user_id = _optional_int(get_config_value("BITRIX_OPERATOR_USER_ID"))
         allowed_connectors = {
             value.strip()
-            for value in os.getenv("BITRIX_ALLOWED_CONNECTORS", "").split(",")
+            for value in get_config_value("BITRIX_ALLOWED_CONNECTORS", "").split(",")
             if value.strip()
         }
         return cls(
-            webhook_base_url=os.getenv("BITRIX_WEBHOOK_BASE_URL", "").strip(),
-            assignment_stage_id=os.getenv("BITRIX_ASSIGNMENT_STAGE_ID", "").strip(),
+            webhook_base_url=get_config_value("BITRIX_WEBHOOK_BASE_URL", "").strip(),
+            assignment_stage_id=get_config_value("BITRIX_ASSIGNMENT_STAGE_ID", "").strip(),
             category_id=category_id,
             operator_user_id=operator_user_id,
-            target_stage_id=os.getenv("BITRIX_TARGET_STAGE_ID", "").strip() or None,
-            greeting_message=(os.getenv("BITRIX_GREETING_MESSAGE", "").strip().replace("\\n", "\n") or None),
-            mode=os.getenv("BITRIX_AUTOMATION_MODE", "dry_run").strip().lower(),
-            outbound_token=os.getenv("BITRIX_OUTBOUND_TOKEN", "").strip() or None,
+            target_stage_id=get_config_value("BITRIX_TARGET_STAGE_ID", "").strip() or None,
+            greeting_message=(get_config_value("BITRIX_GREETING_MESSAGE", "").strip().replace("\\n", "\n") or None),
+            mode=get_config_value("BITRIX_AUTOMATION_MODE", "dry_run").strip().lower(),
+            outbound_token=get_config_value("BITRIX_OUTBOUND_TOKEN", "").strip() or None,
             allowed_connectors=allowed_connectors,
-            scan_enabled=_optional_bool(os.getenv("BITRIX_SCAN_ENABLED"), default=True),
-            scan_interval_seconds=_optional_float(os.getenv("BITRIX_SCAN_INTERVAL_SECONDS"), default=5.0),
-            scan_limit=_optional_int(os.getenv("BITRIX_SCAN_LIMIT")) or 8,
+            scan_enabled=_optional_bool(get_config_value("BITRIX_SCAN_ENABLED"), default=True),
+            scan_interval_seconds=_optional_float(get_config_value("BITRIX_SCAN_INTERVAL_SECONDS"), default=5.0),
+            scan_limit=_optional_int(get_config_value("BITRIX_SCAN_LIMIT")) or 8,
         )
 
     @property
@@ -110,6 +127,31 @@ class RecentEventCache:
             return True
         self._seen[key] = now + self.ttl_seconds
         return False
+
+
+def get_config_value(key: str, default: str = "") -> str:
+    with RUNTIME_CONFIG_LOCK:
+        if key in RUNTIME_CONFIG_OVERRIDES:
+            return RUNTIME_CONFIG_OVERRIDES[key]
+    return os.getenv(key, default)
+
+
+def get_runtime_config_overrides() -> dict[str, str]:
+    with RUNTIME_CONFIG_LOCK:
+        return dict(RUNTIME_CONFIG_OVERRIDES)
+
+
+def update_runtime_config_overrides(values: dict[str, Any]) -> dict[str, str]:
+    allowed_keys = EDITABLE_CONFIG_KEYS | EDITABLE_SECRET_KEYS
+    with RUNTIME_CONFIG_LOCK:
+        for key, value in values.items():
+            if key not in allowed_keys:
+                continue
+            text = "" if value is None else str(value)
+            if key in EDITABLE_SECRET_KEYS and (not text or text.startswith("***")):
+                continue
+            RUNTIME_CONFIG_OVERRIDES[key] = text
+        return dict(RUNTIME_CONFIG_OVERRIDES)
 
 
 class BitrixOpenLineAutomation:

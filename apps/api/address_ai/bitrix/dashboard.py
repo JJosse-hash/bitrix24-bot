@@ -7,7 +7,12 @@ from typing import Any
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import HTMLResponse
 
-from address_ai.bitrix.automation import BitrixAutomationConfig, BitrixOpenLineAutomation
+from address_ai.bitrix.automation import (
+    BitrixAutomationConfig,
+    BitrixOpenLineAutomation,
+    get_runtime_config_overrides,
+    update_runtime_config_overrides,
+)
 from address_ai.bitrix.client import BitrixClient, BitrixError
 from address_ai.bitrix.scanner import scanner
 
@@ -40,10 +45,45 @@ def bitrix_status(request: Request) -> dict[str, Any]:
         "scan_enabled": config.scan_enabled,
         "scan_interval_seconds": config.scan_interval_seconds,
         "scan_limit": config.scan_limit,
+        "runtime_overrides": sorted(get_runtime_config_overrides().keys()),
         "event_url": str(request.url_for("bitrix_event")),
         "health_url": str(request.url_for("api_health")),
         "dashboard_token_enabled": bool(os.getenv("BITRIX_DASHBOARD_TOKEN", "").strip()),
     }
+
+
+@router.get("/api/bitrix/settings")
+def bitrix_settings(request: Request) -> dict[str, Any]:
+    verify_dashboard_access(request)
+    config = BitrixAutomationConfig.from_env()
+    overrides = get_runtime_config_overrides()
+    return {
+        "values": {
+            "BITRIX_WEBHOOK_BASE_URL": mask_secret(config.webhook_base_url) or "",
+            "BITRIX_ASSIGNMENT_STAGE_ID": config.assignment_stage_id,
+            "BITRIX_CATEGORY_ID": config.category_id,
+            "BITRIX_AUTOMATION_MODE": config.mode,
+            "BITRIX_OPERATOR_USER_ID": config.operator_user_id,
+            "BITRIX_TARGET_STAGE_ID": config.target_stage_id or "",
+            "BITRIX_GREETING_MESSAGE": (config.greeting_message or "").replace("\n", "\\n"),
+            "BITRIX_ALLOWED_CONNECTORS": ",".join(sorted(config.allowed_connectors)),
+            "BITRIX_SCAN_ENABLED": str(config.scan_enabled).lower(),
+            "BITRIX_SCAN_INTERVAL_SECONDS": config.scan_interval_seconds,
+            "BITRIX_SCAN_LIMIT": config.scan_limit,
+        },
+        "runtime_overrides": overrides,
+        "note": "Los cambios del dashboard son en vivo. Para hacerlos permanentes tras redeploy, copialos a Environment Variables de Render.",
+    }
+
+
+@router.put("/api/bitrix/settings")
+async def bitrix_settings_update(request: Request) -> dict[str, Any]:
+    verify_dashboard_access(request)
+    body = await request.json()
+    if not isinstance(body, dict):
+        raise HTTPException(status_code=400, detail="Expected JSON object")
+    update_runtime_config_overrides(body)
+    return bitrix_settings(request)
 
 
 @router.get("/api/bitrix/scanner")
@@ -207,6 +247,7 @@ DASHBOARD_HTML = """
       min-width: 0;
     }
     .panel.wide { grid-column: span 12; }
+    .panel.third { grid-column: span 4; }
     h2 { margin: 0 0 12px; font-size: 15px; font-weight: 650; }
     dl {
       display: grid;
@@ -254,14 +295,18 @@ DASHBOARD_HTML = """
     }
     .metric span { display: block; color: var(--muted); font-size: 12px; }
     .metric strong { display: block; margin-top: 6px; font-size: 18px; overflow-wrap: anywhere; }
-    form {
+    form, .settings-grid {
       display: grid;
       grid-template-columns: 1fr 1fr auto;
       gap: 10px;
       align-items: end;
     }
+    .settings-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      align-items: start;
+    }
     label { display: grid; gap: 6px; color: var(--muted); font-size: 13px; }
-    input {
+    input, select, textarea {
       width: 100%;
       min-height: 40px;
       border: 1px solid var(--line);
@@ -271,6 +316,7 @@ DASHBOARD_HTML = """
       padding: 8px 10px;
       font-size: 14px;
     }
+    textarea { min-height: 94px; resize: vertical; grid-column: span 2; }
     pre {
       min-height: 96px;
       margin: 12px 0 0;
@@ -299,7 +345,8 @@ DASHBOARD_HTML = """
       .bar { align-items: flex-start; flex-direction: column; }
       .panel, .panel.wide { grid-column: span 12; }
       .metrics { grid-template-columns: 1fr 1fr; }
-      form, dl { grid-template-columns: 1fr; }
+      form, dl, .settings-grid { grid-template-columns: 1fr; }
+      textarea { grid-column: span 1; }
     }
   </style>
 </head>
@@ -324,6 +371,55 @@ DASHBOARD_HTML = """
       <div class="panel">
         <h2>Servicio</h2>
         <dl id="urls"></dl>
+      </div>
+
+      <div class="panel wide">
+        <h2>Configuracion En Vivo</h2>
+        <div class="settings-grid">
+          <label>Modo
+            <select id="setting-mode">
+              <option value="dry_run">dry_run</option>
+              <option value="live">live</option>
+            </select>
+          </label>
+          <label>Etapa ASIGNACION
+            <input id="setting-assignment-stage" placeholder="C16:UC_GIKKS8">
+          </label>
+          <label>Etapa ASIGNADO
+            <input id="setting-target-stage" placeholder="C16:UC_L8W7U1">
+          </label>
+          <label>Categoria
+            <input id="setting-category" inputmode="numeric" placeholder="16">
+          </label>
+          <label>Operador
+            <input id="setting-operator" inputmode="numeric" placeholder="2381716">
+          </label>
+          <label>Intervalo scanner
+            <input id="setting-interval" inputmode="decimal" placeholder="5">
+          </label>
+          <label>Limite por vuelta
+            <input id="setting-limit" inputmode="numeric" placeholder="8">
+          </label>
+          <label>Scanner activo
+            <select id="setting-scan-enabled">
+              <option value="true">true</option>
+              <option value="false">false</option>
+            </select>
+          </label>
+          <label>Conectores permitidos
+            <input id="setting-connectors" placeholder="opcional">
+          </label>
+          <label>Webhook Bitrix
+            <input id="setting-webhook" placeholder="dejar masked para no cambiar">
+          </label>
+          <label>Mensaje automatico
+            <textarea id="setting-message"></textarea>
+          </label>
+          <div style="align-self:end">
+            <button id="save-settings" type="button">Guardar</button>
+          </div>
+        </div>
+        <pre id="settings-output">Los cambios aqui son inmediatos. Para hacerlos permanentes, copialos despues a Render.</pre>
       </div>
 
       <div class="panel wide">
@@ -434,6 +530,7 @@ DASHBOARD_HTML = """
         row("Mover a ASIGNADO", data.target_stage_id ? `<code>${data.target_stage_id}</code>` : ""),
         row("Mensaje inicial", data.greeting_enabled ? "Configurado" : "Sin mensaje"),
         row("Scanner", data.scan_enabled ? `Cada ${data.scan_interval_seconds}s, limite ${data.scan_limit}` : "Desactivado"),
+        row("Overrides", (data.runtime_overrides || []).join(", ") || "Ninguno"),
       ].join("");
 
       document.querySelector("#urls").innerHTML = [
@@ -479,6 +576,59 @@ DASHBOARD_HTML = """
       if (response.ok) renderScanner(await response.json());
     }
 
+    async function loadSettings() {
+      const response = await fetch("/api/bitrix/settings", {headers});
+      if (!response.ok) return;
+      const data = await response.json();
+      const values = data.values || {};
+      document.querySelector("#setting-mode").value = values.BITRIX_AUTOMATION_MODE || "dry_run";
+      document.querySelector("#setting-assignment-stage").value = values.BITRIX_ASSIGNMENT_STAGE_ID || "";
+      document.querySelector("#setting-target-stage").value = values.BITRIX_TARGET_STAGE_ID || "";
+      document.querySelector("#setting-category").value = values.BITRIX_CATEGORY_ID ?? "";
+      document.querySelector("#setting-operator").value = values.BITRIX_OPERATOR_USER_ID ?? "";
+      document.querySelector("#setting-interval").value = values.BITRIX_SCAN_INTERVAL_SECONDS ?? "";
+      document.querySelector("#setting-limit").value = values.BITRIX_SCAN_LIMIT ?? "";
+      document.querySelector("#setting-scan-enabled").value = String(values.BITRIX_SCAN_ENABLED ?? "true");
+      document.querySelector("#setting-connectors").value = values.BITRIX_ALLOWED_CONNECTORS || "";
+      document.querySelector("#setting-webhook").value = values.BITRIX_WEBHOOK_BASE_URL || "";
+      document.querySelector("#setting-message").value = values.BITRIX_GREETING_MESSAGE || "";
+    }
+
+    async function saveSettings() {
+      const button = document.querySelector("#save-settings");
+      const output = document.querySelector("#settings-output");
+      button.disabled = true;
+      output.textContent = "Guardando...";
+      const body = {
+        BITRIX_AUTOMATION_MODE: document.querySelector("#setting-mode").value,
+        BITRIX_ASSIGNMENT_STAGE_ID: document.querySelector("#setting-assignment-stage").value.trim(),
+        BITRIX_TARGET_STAGE_ID: document.querySelector("#setting-target-stage").value.trim(),
+        BITRIX_CATEGORY_ID: document.querySelector("#setting-category").value.trim(),
+        BITRIX_OPERATOR_USER_ID: document.querySelector("#setting-operator").value.trim(),
+        BITRIX_SCAN_INTERVAL_SECONDS: document.querySelector("#setting-interval").value.trim(),
+        BITRIX_SCAN_LIMIT: document.querySelector("#setting-limit").value.trim(),
+        BITRIX_SCAN_ENABLED: document.querySelector("#setting-scan-enabled").value,
+        BITRIX_ALLOWED_CONNECTORS: document.querySelector("#setting-connectors").value.trim(),
+        BITRIX_WEBHOOK_BASE_URL: document.querySelector("#setting-webhook").value.trim(),
+        BITRIX_GREETING_MESSAGE: document.querySelector("#setting-message").value,
+      };
+      try {
+        const response = await fetch("/api/bitrix/settings", {
+          method: "PUT",
+          headers: {"content-type": "application/json", ...headers},
+          body: JSON.stringify(body),
+        });
+        const data = await response.json();
+        output.textContent = JSON.stringify(data, null, 2);
+        await loadStatus();
+        await loadScanner();
+      } catch (error) {
+        output.textContent = String(error);
+      } finally {
+        button.disabled = false;
+      }
+    }
+
     async function postScanner(path) {
       const response = await fetch(path, {method: "POST", headers});
       if (response.ok) {
@@ -514,9 +664,11 @@ DASHBOARD_HTML = """
     document.querySelector("#scan-now").addEventListener("click", async () => postScanner("/api/bitrix/scan"));
     document.querySelector("#pause-scanner").addEventListener("click", async () => postScanner("/api/bitrix/scanner/pause"));
     document.querySelector("#resume-scanner").addEventListener("click", async () => postScanner("/api/bitrix/scanner/resume"));
+    document.querySelector("#save-settings").addEventListener("click", saveSettings);
 
     loadStatus();
     loadScanner();
+    loadSettings();
     setInterval(loadStatus, 15000);
     setInterval(loadScanner, 4000);
   </script>
