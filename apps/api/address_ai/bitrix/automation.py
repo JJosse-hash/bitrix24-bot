@@ -37,6 +37,9 @@ class BitrixAutomationConfig:
     mode: str
     outbound_token: str | None
     allowed_connectors: set[str]
+    scan_enabled: bool
+    scan_interval_seconds: float
+    scan_limit: int
 
     @classmethod
     def from_env(cls) -> "BitrixAutomationConfig":
@@ -53,10 +56,13 @@ class BitrixAutomationConfig:
             category_id=category_id,
             operator_user_id=operator_user_id,
             target_stage_id=os.getenv("BITRIX_TARGET_STAGE_ID", "").strip() or None,
-            greeting_message=os.getenv("BITRIX_GREETING_MESSAGE", "").strip() or None,
+            greeting_message=(os.getenv("BITRIX_GREETING_MESSAGE", "").strip().replace("\\n", "\n") or None),
             mode=os.getenv("BITRIX_AUTOMATION_MODE", "dry_run").strip().lower(),
             outbound_token=os.getenv("BITRIX_OUTBOUND_TOKEN", "").strip() or None,
             allowed_connectors=allowed_connectors,
+            scan_enabled=_optional_bool(os.getenv("BITRIX_SCAN_ENABLED"), default=True),
+            scan_interval_seconds=_optional_float(os.getenv("BITRIX_SCAN_INTERVAL_SECONDS"), default=5.0),
+            scan_limit=_optional_int(os.getenv("BITRIX_SCAN_LIMIT")) or 8,
         )
 
     @property
@@ -154,6 +160,33 @@ class BitrixOpenLineAutomation:
             deal_id=deal_id,
             dry_run=not self.config.live,
         )
+
+    def scan_assignment(self, limit: int | None = None) -> list[AutomationResult]:
+        deals = self.list_assignment_deals(limit or self.config.scan_limit)
+        results: list[AutomationResult] = []
+        for deal in deals:
+            result = self.handle_deal(int(deal["id"]))
+            results.append(result)
+            if result.status in {"candidate", "claimed"}:
+                break
+        return results
+
+    def list_assignment_deals(self, limit: int) -> list[dict[str, Any]]:
+        filter_params: dict[str, Any] = {"=stageId": self.config.assignment_stage_id}
+        if self.config.category_id is not None:
+            filter_params["=categoryId"] = self.config.category_id
+
+        result = self.client.call(
+            "crm.item.list",
+            {
+                "entityTypeId": 2,
+                "filter": filter_params,
+                "select": ["id", "title", "stageId", "categoryId", "assignedById", "updatedTime"],
+                "order": {"updatedTime": "DESC"},
+            },
+        )
+        items = result.get("items", []) if isinstance(result, dict) else []
+        return items[:limit]
 
     def handle_chat(self, chat_id: int, deal_id: int | None = None) -> AutomationResult:
         if deal_id is not None:
@@ -340,3 +373,15 @@ def _optional_int(value: str | None) -> int | None:
     if not value or not value.strip():
         return None
     return int(value)
+
+
+def _optional_float(value: str | None, default: float) -> float:
+    if not value or not value.strip():
+        return default
+    return float(value)
+
+
+def _optional_bool(value: str | None, default: bool) -> bool:
+    if value is None or not value.strip():
+        return default
+    return value.strip().lower() in {"1", "true", "yes", "y", "on"}

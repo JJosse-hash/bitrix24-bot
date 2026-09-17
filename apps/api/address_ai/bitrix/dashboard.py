@@ -9,6 +9,7 @@ from fastapi.responses import HTMLResponse
 
 from address_ai.bitrix.automation import BitrixAutomationConfig, BitrixOpenLineAutomation
 from address_ai.bitrix.client import BitrixClient, BitrixError
+from address_ai.bitrix.scanner import scanner
 
 
 router = APIRouter(tags=["dashboard"])
@@ -35,12 +36,41 @@ def bitrix_status(request: Request) -> dict[str, Any]:
         "operator_user_id": config.operator_user_id,
         "target_stage_id": config.target_stage_id,
         "greeting_enabled": bool(config.greeting_message),
-        "outbound_token_enabled": bool(config.outbound_token),
         "allowed_connectors": sorted(config.allowed_connectors),
+        "scan_enabled": config.scan_enabled,
+        "scan_interval_seconds": config.scan_interval_seconds,
+        "scan_limit": config.scan_limit,
         "event_url": str(request.url_for("bitrix_event")),
         "health_url": str(request.url_for("api_health")),
         "dashboard_token_enabled": bool(os.getenv("BITRIX_DASHBOARD_TOKEN", "").strip()),
     }
+
+
+@router.get("/api/bitrix/scanner")
+def bitrix_scanner_status(request: Request) -> dict[str, Any]:
+    verify_dashboard_access(request)
+    return scanner.snapshot()
+
+
+@router.post("/api/bitrix/scan")
+async def bitrix_scan_now(request: Request) -> dict[str, Any]:
+    verify_dashboard_access(request)
+    records = await scanner.run_once(source="manual")
+    return {"records": [record.__dict__ for record in records], "scanner": scanner.snapshot()}
+
+
+@router.post("/api/bitrix/scanner/pause")
+def bitrix_scanner_pause(request: Request) -> dict[str, Any]:
+    verify_dashboard_access(request)
+    scanner.pause()
+    return scanner.snapshot()
+
+
+@router.post("/api/bitrix/scanner/resume")
+def bitrix_scanner_resume(request: Request) -> dict[str, Any]:
+    verify_dashboard_access(request)
+    scanner.resume()
+    return scanner.snapshot()
 
 
 @router.post("/api/bitrix/check")
@@ -114,10 +144,10 @@ DASHBOARD_HTML = """
       color-scheme: dark;
       --bg: #101214;
       --panel: #171a1f;
-      --panel-2: #1f232a;
+      --panel-2: #20252c;
       --text: #e9edf2;
       --muted: #9aa4b2;
-      --line: #2b313a;
+      --line: #2c333d;
       --green: #36c27a;
       --yellow: #e0b84f;
       --red: #f06a6a;
@@ -132,10 +162,10 @@ DASHBOARD_HTML = """
     }
     header {
       border-bottom: 1px solid var(--line);
-      background: #0d0f12;
+      background: #0c0e11;
     }
     .bar, main {
-      max-width: 1180px;
+      max-width: 1220px;
       margin: 0 auto;
       padding: 18px 22px;
     }
@@ -145,17 +175,8 @@ DASHBOARD_HTML = """
       justify-content: space-between;
       gap: 16px;
     }
-    h1 {
-      margin: 0;
-      font-size: 20px;
-      font-weight: 700;
-      letter-spacing: 0;
-    }
-    .subtitle {
-      margin-top: 4px;
-      color: var(--muted);
-      font-size: 13px;
-    }
+    h1 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: 0; }
+    .subtitle { margin-top: 4px; color: var(--muted); font-size: 13px; }
     .pill {
       display: inline-flex;
       align-items: center;
@@ -168,8 +189,8 @@ DASHBOARD_HTML = """
       font-size: 13px;
       white-space: nowrap;
     }
-    .pill.ok { color: var(--green); border-color: rgba(54, 194, 122, 0.4); }
-    .pill.warn { color: var(--yellow); border-color: rgba(224, 184, 79, 0.4); }
+    .pill.ok { color: var(--green); border-color: rgba(54, 194, 122, 0.45); }
+    .pill.live { color: var(--red); border-color: rgba(240, 106, 106, 0.5); }
     .grid {
       display: grid;
       grid-template-columns: repeat(12, 1fr);
@@ -185,14 +206,10 @@ DASHBOARD_HTML = """
       min-width: 0;
     }
     .panel.wide { grid-column: span 12; }
-    h2 {
-      margin: 0 0 12px;
-      font-size: 15px;
-      font-weight: 650;
-    }
+    h2 { margin: 0 0 12px; font-size: 15px; font-weight: 650; }
     dl {
       display: grid;
-      grid-template-columns: 180px minmax(0, 1fr);
+      grid-template-columns: 170px minmax(0, 1fr);
       gap: 8px 12px;
       margin: 0;
       font-size: 13px;
@@ -208,28 +225,7 @@ DASHBOARD_HTML = """
       color: #d7e6ff;
       overflow-wrap: anywhere;
     }
-    form {
-      display: grid;
-      grid-template-columns: 1fr 1fr auto;
-      gap: 10px;
-      align-items: end;
-    }
-    label {
-      display: grid;
-      gap: 6px;
-      color: var(--muted);
-      font-size: 13px;
-    }
-    input {
-      width: 100%;
-      min-height: 40px;
-      border: 1px solid var(--line);
-      border-radius: 7px;
-      background: #111418;
-      color: var(--text);
-      padding: 8px 10px;
-      font-size: 14px;
-    }
+    .toolbar { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
     button {
       min-height: 40px;
       border: 1px solid rgba(90, 167, 255, 0.45);
@@ -240,9 +236,42 @@ DASHBOARD_HTML = """
       font-weight: 650;
       cursor: pointer;
     }
+    button.secondary { background: #151a20; border-color: var(--line); color: var(--text); }
     button:disabled { opacity: 0.55; cursor: wait; }
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .metric {
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 10px;
+      background: #12161b;
+      min-height: 68px;
+    }
+    .metric span { display: block; color: var(--muted); font-size: 12px; }
+    .metric strong { display: block; margin-top: 6px; font-size: 18px; overflow-wrap: anywhere; }
+    form {
+      display: grid;
+      grid-template-columns: 1fr 1fr auto;
+      gap: 10px;
+      align-items: end;
+    }
+    label { display: grid; gap: 6px; color: var(--muted); font-size: 13px; }
+    input {
+      width: 100%;
+      min-height: 40px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      background: #111418;
+      color: var(--text);
+      padding: 8px 10px;
+      font-size: 14px;
+    }
     pre {
-      min-height: 120px;
+      min-height: 96px;
       margin: 12px 0 0;
       padding: 12px;
       border: 1px solid var(--line);
@@ -253,26 +282,23 @@ DASHBOARD_HTML = """
       white-space: pre-wrap;
       font-size: 13px;
     }
-    .steps {
-      display: grid;
-      gap: 8px;
-      margin: 0;
-      padding: 0;
-      list-style: none;
-      color: var(--muted);
-      font-size: 13px;
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td {
+      border-bottom: 1px solid var(--line);
+      padding: 9px 8px;
+      text-align: left;
+      vertical-align: top;
     }
-    .steps li {
-      padding: 9px 10px;
-      border: 1px solid var(--line);
-      border-radius: 7px;
-      background: #12161b;
-    }
+    th { color: var(--muted); font-weight: 600; }
+    td { overflow-wrap: anywhere; }
+    .status-candidate, .status-claimed { color: var(--green); }
+    .status-error, .status-race_lost, .status-race_lost_after_answer { color: var(--red); }
+    .status-ignored { color: var(--muted); }
     @media (max-width: 760px) {
       .bar { align-items: flex-start; flex-direction: column; }
       .panel, .panel.wide { grid-column: span 12; }
-      form { grid-template-columns: 1fr; }
-      dl { grid-template-columns: 1fr; }
+      .metrics { grid-template-columns: 1fr 1fr; }
+      form, dl { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -281,7 +307,7 @@ DASHBOARD_HTML = """
     <div class="bar">
       <div>
         <h1>Bitrix24 Bot</h1>
-        <div class="subtitle">Panel operativo para webhooks, pruebas y estado del servicio.</div>
+        <div class="subtitle">Escaneo automatico de ASIGNACION, filtro de chats nuevos y operacion segura.</div>
       </div>
       <div id="mode" class="pill">Cargando</div>
     </div>
@@ -290,13 +316,48 @@ DASHBOARD_HTML = """
   <main>
     <section class="grid">
       <div class="panel">
-        <h2>Estado</h2>
+        <h2>Configuracion</h2>
         <dl id="status"></dl>
       </div>
 
       <div class="panel">
-        <h2>URLs</h2>
+        <h2>Servicio</h2>
         <dl id="urls"></dl>
+      </div>
+
+      <div class="panel wide">
+        <h2>Scanner Automatico</h2>
+        <div class="toolbar">
+          <button id="scan-now" type="button">Escanear ahora</button>
+          <button id="pause-scanner" class="secondary" type="button">Pausar</button>
+          <button id="resume-scanner" class="secondary" type="button">Reanudar</button>
+        </div>
+        <div class="metrics">
+          <div class="metric"><span>Worker</span><strong id="scanner-running">-</strong></div>
+          <div class="metric"><span>Estado</span><strong id="scanner-state">-</strong></div>
+          <div class="metric"><span>Intervalo</span><strong id="scanner-interval">-</strong></div>
+          <div class="metric"><span>Escaneos</span><strong id="scanner-count">-</strong></div>
+        </div>
+        <pre id="scanner-error">Sin errores recientes.</pre>
+      </div>
+
+      <div class="panel wide">
+        <h2>Resultados Recientes</h2>
+        <div style="overflow:auto">
+          <table>
+            <thead>
+              <tr>
+                <th>Hora</th>
+                <th>Estado</th>
+                <th>Deal</th>
+                <th>Chat</th>
+                <th>Motivo</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="recent-results"></tbody>
+          </table>
+        </div>
       </div>
 
       <div class="panel wide">
@@ -312,17 +373,6 @@ DASHBOARD_HTML = """
         </form>
         <pre id="check-output">La prueba manual siempre corre en modo dry-run.</pre>
       </div>
-
-      <div class="panel wide">
-        <h2>Render</h2>
-        <ul class="steps">
-          <li>Tipo de servicio: Web Services.</li>
-          <li>Root directory: apps/api.</li>
-          <li>Build command: pip install -r requirements.txt.</li>
-          <li>Start command: uvicorn address_ai.api.main:app --host 0.0.0.0 --port $PORT.</li>
-          <li>Health check path: /api/health.</li>
-        </ul>
-      </div>
     </section>
   </main>
 
@@ -335,35 +385,76 @@ DASHBOARD_HTML = """
       return `<dt>${key}</dt><dd>${value || "<span style='color: var(--red)'>Falta</span>"}</dd>`;
     }
 
+    function fmt(value) {
+      return value === null || value === undefined || value === "" ? "-" : value;
+    }
+
+    function fmtTime(value) {
+      if (!value) return "-";
+      try { return new Date(value).toLocaleTimeString(); } catch { return value; }
+    }
+
     async function loadStatus() {
       const response = await fetch("/api/bitrix/status", {headers});
       if (!response.ok) {
         document.querySelector("#mode").textContent = "Sin acceso";
-        document.querySelector("#mode").className = "pill warn";
         document.querySelector("#status").innerHTML = row("Error", await response.text());
         return;
       }
       const data = await response.json();
       const mode = document.querySelector("#mode");
       mode.textContent = data.is_live ? "LIVE" : "DRY RUN";
-      mode.className = data.is_live ? "pill warn" : "pill ok";
+      mode.className = data.is_live ? "pill live" : "pill ok";
 
       document.querySelector("#status").innerHTML = [
         row("Modo", `<code>${data.mode}</code>`),
         row("Webhook Bitrix", data.webhook_configured ? `<code>${data.webhook_preview}</code>` : ""),
-        row("Etapa ASIGNACION", data.assignment_stage_id ? `<code>${data.assignment_stage_id}</code>` : ""),
+        row("ASIGNACION", data.assignment_stage_id ? `<code>${data.assignment_stage_id}</code>` : ""),
         row("Categoria", data.category_id ?? ""),
         row("Operador", data.operator_user_id ?? ""),
-        row("Mover a etapa", data.target_stage_id ? `<code>${data.target_stage_id}</code>` : ""),
+        row("Mover a ASIGNADO", data.target_stage_id ? `<code>${data.target_stage_id}</code>` : ""),
         row("Mensaje inicial", data.greeting_enabled ? "Configurado" : "Sin mensaje"),
-        row("Token eventos", data.outbound_token_enabled ? "Configurado" : "Sin token"),
+        row("Scanner", data.scan_enabled ? `Cada ${data.scan_interval_seconds}s, limite ${data.scan_limit}` : "Desactivado"),
       ].join("");
 
       document.querySelector("#urls").innerHTML = [
-        row("Eventos Bitrix", `<code>${data.event_url}</code>`),
         row("Health", `<code>${data.health_url}</code>`),
+        row("Eventos", `<code>${data.event_url}</code>`),
         row("Dashboard token", data.dashboard_token_enabled ? "Activado" : "Sin proteger"),
       ].join("");
+    }
+
+    function renderScanner(data) {
+      document.querySelector("#scanner-running").textContent = data.task_running ? "Activo" : "Detenido";
+      document.querySelector("#scanner-state").textContent = data.paused ? "Pausado" : (data.enabled ? "Escaneando" : "Desactivado");
+      document.querySelector("#scanner-interval").textContent = `${data.interval_seconds}s`;
+      document.querySelector("#scanner-count").textContent = data.scan_count;
+      document.querySelector("#scanner-error").textContent = data.last_error || "Sin errores recientes.";
+
+      const rows = (data.recent || []).map((item) => `
+        <tr>
+          <td>${fmtTime(item.timestamp)}</td>
+          <td class="status-${item.status}">${item.status}</td>
+          <td>${fmt(item.deal_id)}</td>
+          <td>${fmt(item.chat_id)}</td>
+          <td>${item.reason}</td>
+          <td>${(item.actions || []).join(", ") || "-"}</td>
+        </tr>
+      `).join("");
+      document.querySelector("#recent-results").innerHTML = rows || "<tr><td colspan='6'>Sin resultados todavia.</td></tr>";
+    }
+
+    async function loadScanner() {
+      const response = await fetch("/api/bitrix/scanner", {headers});
+      if (response.ok) renderScanner(await response.json());
+    }
+
+    async function postScanner(path) {
+      const response = await fetch(path, {method: "POST", headers});
+      if (response.ok) {
+        const data = await response.json();
+        renderScanner(data.scanner || data);
+      }
     }
 
     document.querySelector("#check-form").addEventListener("submit", async (event) => {
@@ -382,8 +473,7 @@ DASHBOARD_HTML = """
           headers: {"content-type": "application/json", ...headers},
           body: JSON.stringify(body),
         });
-        const data = await response.json();
-        output.textContent = JSON.stringify(data, null, 2);
+        output.textContent = JSON.stringify(await response.json(), null, 2);
       } catch (error) {
         output.textContent = String(error);
       } finally {
@@ -391,7 +481,14 @@ DASHBOARD_HTML = """
       }
     });
 
+    document.querySelector("#scan-now").addEventListener("click", async () => postScanner("/api/bitrix/scan"));
+    document.querySelector("#pause-scanner").addEventListener("click", async () => postScanner("/api/bitrix/scanner/pause"));
+    document.querySelector("#resume-scanner").addEventListener("click", async () => postScanner("/api/bitrix/scanner/resume"));
+
     loadStatus();
+    loadScanner();
+    setInterval(loadStatus, 15000);
+    setInterval(loadScanner, 4000);
   </script>
 </body>
 </html>

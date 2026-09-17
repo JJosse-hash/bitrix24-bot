@@ -13,3 +13,9 @@ services:
         value: C16:UC_GIKKS8
       - key: BITRIX_CATEGORY_ID
         value: "16"
+      - key: BITRIX_SCAN_ENABLED
+        value: "true"
+      - key: BITRIX_SCAN_INTERVAL_SECONDS
+        value: "5"
+      - key: BITRIX_SCAN_LIMIT
+        value: "8"

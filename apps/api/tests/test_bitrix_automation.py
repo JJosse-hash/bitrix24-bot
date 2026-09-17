@@ -116,6 +116,9 @@ def test_handle_deal_dry_run_reports_candidate():
         mode="dry_run",
         outbound_token=None,
         allowed_connectors=set(),
+        scan_enabled=True,
+        scan_interval_seconds=5,
+        scan_limit=8,
     )
 
     result = BitrixOpenLineAutomation(client, config).handle_deal(2804388)

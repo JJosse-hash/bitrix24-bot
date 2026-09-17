@@ -2,11 +2,13 @@ from __future__ import annotations
 
 import logging
 import time
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from address_ai.bitrix.dashboard import router as bitrix_dashboard_router
+from address_ai.bitrix.scanner import scanner
 from address_ai.bitrix.webhook import router as bitrix_router
 from address_ai.core.models import ParsedAddress, SearchRequest, SearchResponse
 from address_ai.core.parser import MexicanAddressParser
@@ -16,7 +18,17 @@ from address_ai.ranking.ranker import CandidateRanker
 logging.basicConfig(level=logging.INFO, format="%(message)s")
 logger = logging.getLogger("address-ai")
 
-app = FastAPI(title="AddressAI México API", version="0.1.0")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await scanner.start()
+    try:
+        yield
+    finally:
+        await scanner.stop()
+
+
+app = FastAPI(title="AddressAI México API", version="0.1.0", lifespan=lifespan)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
