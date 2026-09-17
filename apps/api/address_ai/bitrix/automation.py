@@ -277,9 +277,7 @@ class BitrixOpenLineAutomation:
         actions: list[str] = []
         self.client.call("imopenlines.operator.answer", {"CHAT_ID": chat_id})
         actions.append("answered_dialog")
-        if self.config.operator_user_id is not None:
-            self.transfer_chat_to_operator(chat_id)
-            actions.append("transferred_to_operator")
+        actions.append(self.intercept_chat_as_current_operator(chat_id))
 
         fields: dict[str, Any] = {}
         if self.config.operator_user_id is not None:
@@ -329,16 +327,17 @@ class BitrixOpenLineAutomation:
                 },
             )
 
-    def transfer_chat_to_operator(self, chat_id: int) -> None:
-        if self.config.operator_user_id is None:
-            return
-        self.client.call(
-            "imopenlines.operator.transfer",
-            {
-                "CHAT_ID": chat_id,
-                "USER_ID": self.config.operator_user_id,
-            },
-        )
+    def intercept_chat_as_current_operator(self, chat_id: int) -> str:
+        try:
+            self.client.call(
+                "imopenlines.session.intercept",
+                {"CHAT_ID": chat_id},
+            )
+        except Exception as error:
+            # Some dialog states are already claimed by operator.answer. Do not
+            # block CRM assignment or messaging if Bitrix rejects the intercept.
+            return f"intercept_skipped:{error}"
+        return "intercepted_dialog"
 
     def send_openline_message(self, deal_id: int, chat_id: int) -> None:
         message = self.config.greeting_message or ""

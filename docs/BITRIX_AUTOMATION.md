@@ -64,7 +64,8 @@ buttons to pause, resume, or trigger a scan.
 
 - Rechecks history before acting.
 - Calls `imopenlines.operator.answer`.
-- Rechecks again to reduce race-condition risk.
+- Tries `imopenlines.session.intercept` as a best-effort claim helper. If Bitrix
+  rejects it because the dialog is already claimed, the bot continues.
 - Updates the deal owner/stage.
 - Sends `BITRIX_GREETING_MESSAGE`.
 

@@ -132,6 +132,55 @@ def test_handle_deal_dry_run_reports_candidate():
     ]
 
 
+def test_live_claim_continues_when_intercept_is_rejected():
+    client = FakeBitrixClient(
+        {
+            "crm.item.get": {"item": {"id": 2804388, "stageId": "C16:UC_GIKKS8", "categoryId": 16}},
+            "imopenlines.crm.chat.get": [{"CHAT_ID": 2758584, "CONNECTOR_ID": "whatsapp"}],
+            "imopenlines.session.history.get": {
+                "message": {"1": {"senderid": "99", "text": "Quiero internet"}},
+                "users": {
+                    "99": {
+                        "id": "99",
+                        "name": "Cliente",
+                        "type": "extranet",
+                        "connector": True,
+                        "bot": False,
+                    }
+                },
+            },
+            "imopenlines.operator.answer": True,
+            "imopenlines.session.intercept": RuntimeError("OPERATOR_WRONG"),
+            "crm.item.update": True,
+            "crm.deal.update": True,
+            "imopenlines.crm.message.add": True,
+        }
+    )
+    config = BitrixAutomationConfig(
+        webhook_base_url="https://example.bitrix24.mx/rest/1/key",
+        assignment_stage_id="C16:UC_GIKKS8",
+        category_id=16,
+        operator_user_id=2381716,
+        target_stage_id="C16:UC_L8W7U1",
+        greeting_message="Hola",
+        mode="live",
+        outbound_token=None,
+        allowed_connectors=set(),
+        scan_enabled=True,
+        scan_interval_seconds=5,
+        scan_limit=8,
+    )
+
+    result = BitrixOpenLineAutomation(client, config).handle_deal(2804388)
+
+    assert result.status == "claimed"
+    assert "updated_deal" in result.actions
+    assert "sent_message" in result.actions
+    assert any(action.startswith("intercept_skipped:") for action in result.actions)
+    assert client.calls["crm.item.update"]["fields"]["assignedById"] == 2381716
+    assert client.calls["crm.deal.update"]["fields"]["ASSIGNED_BY_ID"] == 2381716
+
+
 def test_bitrix_event_endpoint_rejects_wrong_token(monkeypatch):
     monkeypatch.setenv("BITRIX_WEBHOOK_BASE_URL", "https://example.bitrix24.mx/rest/1/key")
     monkeypatch.setenv("BITRIX_ASSIGNMENT_STAGE_ID", "C16:UC_GIKKS8")
@@ -153,7 +202,12 @@ class FakeBitrixClient:
     def __init__(self, responses: dict[str, Any]) -> None:
         self.responses = responses
         self.called_methods: list[str] = []
+        self.calls: dict[str, dict[str, Any]] = {}
 
     def call(self, method: str, params: dict[str, Any]) -> Any:
         self.called_methods.append(method)
-        return self.responses[method]
+        self.calls[method] = params
+        response = self.responses[method]
+        if isinstance(response, Exception):
+            raise response
+        return response
