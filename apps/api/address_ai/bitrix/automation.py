@@ -277,6 +277,9 @@ class BitrixOpenLineAutomation:
         actions: list[str] = []
         self.client.call("imopenlines.operator.answer", {"CHAT_ID": chat_id})
         actions.append("answered_dialog")
+        if self.config.operator_user_id is not None:
+            self.transfer_chat_to_operator(chat_id)
+            actions.append("transferred_to_operator")
 
         fields: dict[str, Any] = {}
         if self.config.operator_user_id is not None:
@@ -325,6 +328,17 @@ class BitrixOpenLineAutomation:
                     "params": {"REGISTER_SONET_EVENT": "Y", "REGISTER_HISTORY_EVENT": "Y"},
                 },
             )
+
+    def transfer_chat_to_operator(self, chat_id: int) -> None:
+        if self.config.operator_user_id is None:
+            return
+        self.client.call(
+            "imopenlines.operator.transfer",
+            {
+                "CHAT_ID": chat_id,
+                "USER_ID": self.config.operator_user_id,
+            },
+        )
 
     def send_openline_message(self, deal_id: int, chat_id: int) -> None:
         message = self.config.greeting_message or ""
