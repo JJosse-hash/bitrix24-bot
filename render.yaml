@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: bitrix24-bot
+    runtime: python
+    rootDir: apps/api
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn address_ai.api.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: BITRIX_AUTOMATION_MODE
+        value: dry_run
+      - key: BITRIX_ASSIGNMENT_STAGE_ID
+        value: C16:UC_GIKKS8
+      - key: BITRIX_CATEGORY_ID
+        value: "16"
