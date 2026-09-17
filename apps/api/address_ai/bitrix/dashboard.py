@@ -145,6 +145,7 @@ DASHBOARD_HTML = """
       --bg: #101214;
       --panel: #171a1f;
       --panel-2: #20252c;
+      --panel-3: #12161b;
       --text: #e9edf2;
       --muted: #9aa4b2;
       --line: #2c333d;
@@ -248,7 +249,7 @@ DASHBOARD_HTML = """
       border: 1px solid var(--line);
       border-radius: 7px;
       padding: 10px;
-      background: #12161b;
+      background: var(--panel-3);
       min-height: 68px;
     }
     .metric span { display: block; color: var(--muted); font-size: 12px; }
@@ -336,13 +337,31 @@ DASHBOARD_HTML = """
           <div class="metric"><span>Worker</span><strong id="scanner-running">-</strong></div>
           <div class="metric"><span>Estado</span><strong id="scanner-state">-</strong></div>
           <div class="metric"><span>Intervalo</span><strong id="scanner-interval">-</strong></div>
-          <div class="metric"><span>Escaneos</span><strong id="scanner-count">-</strong></div>
+          <div class="metric"><span>Candidatos</span><strong id="scanner-candidates">-</strong></div>
         </div>
         <pre id="scanner-error">Sin errores recientes.</pre>
       </div>
 
       <div class="panel wide">
-        <h2>Resultados Recientes</h2>
+        <h2>Candidatos Actuales</h2>
+        <div style="overflow:auto">
+          <table>
+            <thead>
+              <tr>
+                <th>Detectado</th>
+                <th>Deal</th>
+                <th>Chat</th>
+                <th>Motivo</th>
+                <th>Acciones en live</th>
+              </tr>
+            </thead>
+            <tbody id="current-candidates"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="panel wide">
+        <h2>Historial Reciente</h2>
         <div style="overflow:auto">
           <table>
             <thead>
@@ -428,8 +447,19 @@ DASHBOARD_HTML = """
       document.querySelector("#scanner-running").textContent = data.task_running ? "Activo" : "Detenido";
       document.querySelector("#scanner-state").textContent = data.paused ? "Pausado" : (data.enabled ? "Escaneando" : "Desactivado");
       document.querySelector("#scanner-interval").textContent = `${data.interval_seconds}s`;
-      document.querySelector("#scanner-count").textContent = data.scan_count;
+      document.querySelector("#scanner-candidates").textContent = (data.current_candidates || []).length;
       document.querySelector("#scanner-error").textContent = data.last_error || "Sin errores recientes.";
+
+      const currentRows = (data.current_candidates || []).map((item) => `
+        <tr>
+          <td>${fmtTime(item.timestamp)}</td>
+          <td>${fmt(item.deal_id)}</td>
+          <td>${fmt(item.chat_id)}</td>
+          <td>${item.reason}</td>
+          <td>${(item.actions || []).join(", ") || "-"}</td>
+        </tr>
+      `).join("");
+      document.querySelector("#current-candidates").innerHTML = currentRows || "<tr><td colspan='5'>No hay candidatos actuales.</td></tr>";
 
       const rows = (data.recent || []).map((item) => `
         <tr>

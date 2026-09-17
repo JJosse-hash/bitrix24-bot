@@ -18,6 +18,10 @@ HANDLED_SYSTEM_PHRASES = (
     "invitó a",
     "transferido",
     "transferida",
+    "recogida",
+    "recogido",
+    "respondio",
+    "respondió",
 )
 
 
@@ -132,14 +136,17 @@ class BitrixOpenLineAutomation:
                 dry_run=not self.config.live,
             )
 
+        rejected_reasons: list[str] = []
         for chat in chats:
             connector_id = str(chat.get("CONNECTOR_ID") or "")
             if self.config.allowed_connectors and connector_id not in self.config.allowed_connectors:
+                rejected_reasons.append(f"Conector no permitido: {connector_id}")
                 continue
 
             chat_id = int(chat["CHAT_ID"])
             eligibility = self.evaluate_chat(chat_id)
             if not eligibility.eligible:
+                rejected_reasons.append(eligibility.reason)
                 continue
 
             if not self.config.live:
@@ -156,7 +163,7 @@ class BitrixOpenLineAutomation:
 
         return AutomationResult(
             status="ignored",
-            reason="Ningun chat vinculado cumple la condicion de nuevo real",
+            reason=rejected_reasons[0] if rejected_reasons else "Ningun chat vinculado cumple la condicion de nuevo real",
             deal_id=deal_id,
             dry_run=not self.config.live,
         )
@@ -167,7 +174,7 @@ class BitrixOpenLineAutomation:
         for deal in deals:
             result = self.handle_deal(int(deal["id"]))
             results.append(result)
-            if result.status in {"candidate", "claimed"}:
+            if self.config.live and result.status == "claimed":
                 break
         return results
 
@@ -301,9 +308,28 @@ class BitrixOpenLineAutomation:
 def evaluate_history(history: dict[str, Any], chat_id: int) -> ChatEligibility:
     messages = history.get("message") or {}
     users = history.get("users") or {}
+    chat = history.get("chat") or {}
     session_id = str(history.get("sessionId")) if history.get("sessionId") is not None else None
     internal_senders: set[str] = set()
     handled_marker_found = False
+
+    active_internal_users = internal_chat_participants(history, users)
+    if active_internal_users:
+        return ChatEligibility(
+            eligible=False,
+            reason="Ya hay empleado/agente dentro del chat",
+            chat_id=chat_id,
+            session_id=session_id,
+            message_count=len(messages),
+            internal_senders=tuple(sorted(active_internal_users)),
+        )
+
+    for chat_info in chat.values():
+        manager_list = chat_info.get("managerList") or []
+        for manager_id in manager_list:
+            user = users.get(str(manager_id))
+            if user_is_internal_human(user):
+                internal_senders.add(str(user.get("name") or manager_id))
 
     for message in messages.values():
         sender_id = message.get("senderid")
@@ -367,6 +393,21 @@ def user_is_internal_human(user: dict[str, Any] | None) -> bool:
 def message_is_hidden_system(message: dict[str, Any]) -> bool:
     params = message.get("params") or {}
     return params.get("class") == "bx-messenger-content-item-system"
+
+
+def internal_chat_participants(history: dict[str, Any], users: dict[str, Any]) -> set[str]:
+    internal_users: set[str] = set()
+    user_in_chat = history.get("userInChat") or {}
+    for chat_users in user_in_chat.values():
+        if isinstance(chat_users, dict):
+            iterable = chat_users.keys()
+        else:
+            iterable = chat_users or []
+        for user_id in iterable:
+            user = users.get(str(user_id))
+            if user_is_internal_human(user):
+                internal_users.add(str(user.get("name") or user_id))
+    return internal_users
 
 
 def _optional_int(value: str | None) -> int | None:

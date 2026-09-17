@@ -42,6 +42,7 @@ class BitrixScanner:
         self._last_finished_at: str | None = None
         self._scan_count = 0
         self._results: deque[ScanRecord] = deque(maxlen=80)
+        self._current: dict[int, ScanRecord] = {}
         self._seen_until: dict[str, float] = {}
 
     async def start(self) -> None:
@@ -84,6 +85,7 @@ class BitrixScanner:
                 "last_error": self._last_error,
                 "last_started_at": self._last_started_at,
                 "last_finished_at": self._last_finished_at,
+                "current_candidates": [asdict(record) for record in self._current.values()],
                 "recent": [asdict(record) for record in list(self._results)],
             }
 
@@ -112,6 +114,7 @@ class BitrixScanner:
         automation = BitrixOpenLineAutomation(BitrixClient(config.webhook_base_url), config)
         try:
             for result in automation.scan_assignment(config.scan_limit):
+                self._update_current(result)
                 if self._should_record(result):
                     record = to_record(result, source)
                     self._append(record)
@@ -125,6 +128,24 @@ class BitrixScanner:
         with self._lock:
             self._last_finished_at = now_iso()
         return records
+
+    def _update_current(self, result: AutomationResult) -> None:
+        if result.deal_id is None:
+            return
+
+        with self._lock:
+            if result.status in {"candidate", "claimed"}:
+                self._current[result.deal_id] = to_record(result, "current")
+            else:
+                self._current.pop(result.deal_id, None)
+
+            now = time.monotonic()
+            max_age = 45.0
+            self._current = {
+                deal_id: record
+                for deal_id, record in self._current.items()
+                if parse_record_age_seconds(record.timestamp, now) <= max_age
+            }
 
     def _finish_with_error(self, error: str, records: list[ScanRecord]) -> list[ScanRecord]:
         record = ScanRecord(
@@ -180,6 +201,15 @@ def to_record(result: AutomationResult, source: str) -> ScanRecord:
 
 def now_iso() -> str:
     return datetime.now(timezone.utc).isoformat(timespec="seconds")
+
+
+def parse_record_age_seconds(timestamp: str, now_monotonic: float) -> float:
+    try:
+        created = datetime.fromisoformat(timestamp)
+    except ValueError:
+        return 0
+    age = datetime.now(timezone.utc) - created
+    return max(age.total_seconds(), 0.0)
 
 
 scanner = BitrixScanner()
