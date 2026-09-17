@@ -311,6 +311,20 @@ class BitrixOpenLineAutomation:
             "crm.item.update",
             {"entityTypeId": 2, "id": deal_id, "fields": fields},
         )
+        legacy_fields: dict[str, Any] = {}
+        if "assignedById" in fields:
+            legacy_fields["ASSIGNED_BY_ID"] = fields["assignedById"]
+        if "stageId" in fields:
+            legacy_fields["STAGE_ID"] = fields["stageId"]
+        if legacy_fields:
+            self.client.call(
+                "crm.deal.update",
+                {
+                    "id": deal_id,
+                    "fields": legacy_fields,
+                    "params": {"REGISTER_SONET_EVENT": "Y", "REGISTER_HISTORY_EVENT": "Y"},
+                },
+            )
 
     def send_openline_message(self, deal_id: int, chat_id: int) -> None:
         message = self.config.greeting_message or ""
