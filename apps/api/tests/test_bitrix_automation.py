@@ -151,6 +151,7 @@ def test_live_claim_continues_when_intercept_is_rejected():
             },
             "imopenlines.operator.answer": True,
             "imopenlines.session.intercept": RuntimeError("OPERATOR_WRONG"),
+            "imopenlines.session.mode.pin": True,
             "crm.item.update": True,
             "crm.deal.update": True,
             "imopenlines.crm.message.add": True,
@@ -177,6 +178,8 @@ def test_live_claim_continues_when_intercept_is_rejected():
     assert "updated_deal" in result.actions
     assert "sent_message" in result.actions
     assert any(action.startswith("intercept_skipped:") for action in result.actions)
+    assert "pinned_dialog" in result.actions
+    assert client.calls["imopenlines.session.mode.pin"] == {"CHAT_ID": 2758584, "ACTIVATE": "Y"}
     assert client.calls["crm.item.update"]["fields"]["assignedById"] == 2381716
     assert client.calls["crm.deal.update"]["fields"]["ASSIGNED_BY_ID"] == 2381716
 

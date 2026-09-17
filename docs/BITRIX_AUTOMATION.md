@@ -66,6 +66,8 @@ buttons to pause, resume, or trigger a scan.
 - Calls `imopenlines.operator.answer`.
 - Tries `imopenlines.session.intercept` as a best-effort claim helper. If Bitrix
   rejects it because the dialog is already claimed, the bot continues.
+- Calls `imopenlines.session.mode.pin` to pin the dialog to the current operator
+  (the same effect as `Asignarlo a mi` in the Bitrix UI).
 - Updates the deal owner/stage.
 - Sends `BITRIX_GREETING_MESSAGE`.
 

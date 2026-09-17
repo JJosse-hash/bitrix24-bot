@@ -278,6 +278,7 @@ class BitrixOpenLineAutomation:
         self.client.call("imopenlines.operator.answer", {"CHAT_ID": chat_id})
         actions.append("answered_dialog")
         actions.append(self.intercept_chat_as_current_operator(chat_id))
+        actions.append(self.pin_chat_to_current_operator(chat_id))
 
         fields: dict[str, Any] = {}
         if self.config.operator_user_id is not None:
@@ -338,6 +339,16 @@ class BitrixOpenLineAutomation:
             # block CRM assignment or messaging if Bitrix rejects the intercept.
             return f"intercept_skipped:{error}"
         return "intercepted_dialog"
+
+    def pin_chat_to_current_operator(self, chat_id: int) -> str:
+        try:
+            self.client.call(
+                "imopenlines.session.mode.pin",
+                {"CHAT_ID": chat_id, "ACTIVATE": "Y"},
+            )
+        except Exception as error:
+            return f"pin_skipped:{error}"
+        return "pinned_dialog"
 
     def send_openline_message(self, deal_id: int, chat_id: int) -> None:
         message = self.config.greeting_message or ""
