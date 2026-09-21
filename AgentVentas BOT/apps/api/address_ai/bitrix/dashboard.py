@@ -21,13 +21,20 @@ from address_ai.bitrix.scanner import scanner
 
 router = APIRouter(tags=["dashboard"])
 
-DASHBOARD_HTML = (pathlib.Path(__file__).parent / "dashboard.html").read_text()
+DASHBOARD_HTML_PATH = pathlib.Path(__file__).parent / "dashboard.html"
 
 
 @router.get("/", response_class=HTMLResponse)
 def dashboard(request: Request) -> HTMLResponse:
     verify_dashboard_access(request)
-    return HTMLResponse(DASHBOARD_HTML)
+    return HTMLResponse(
+        content=DASHBOARD_HTML_PATH.read_text(),
+        headers={
+            "Cache-Control": "no-cache, no-store, must-revalidate, max-age=0",
+            "Pragma": "no-cache",
+            "Expires": "0",
+        },
+    )
 
 
 @router.get("/api/bitrix/status")
