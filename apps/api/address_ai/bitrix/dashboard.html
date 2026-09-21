@@ -1,0 +1,941 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AgentVentas AI — Tactical Sales Command Deck</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #030509;
+      --bg-grid: rgba(0, 240, 255, 0.03);
+      --panel: rgba(8, 12, 22, 0.75);
+      --panel-border: rgba(0, 240, 255, 0.18);
+      --panel-glow: rgba(0, 240, 255, 0.08);
+      
+      --cyan: #00f0ff;
+      --cyan-glow: rgba(0, 240, 255, 0.35);
+      --purple: #a855f7;
+      --purple-glow: rgba(168, 85, 247, 0.35);
+      --emerald: #00ff9d;
+      --emerald-glow: rgba(0, 255, 157, 0.35);
+      --rose: #ff0055;
+      --rose-glow: rgba(255, 0, 85, 0.35);
+      --amber: #ffb703;
+
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #475569;
+
+      --font-hud: 'Orbitron', sans-serif;
+      --font-sans: 'Plus Jakarta Sans', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+
+      --radius: 14px;
+      --sidebar-w: 270px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      min-height: 100vh;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+      background-image: 
+        linear-gradient(var(--bg-grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--bg-grid) 1px, transparent 1px);
+      background-size: 36px 36px;
+      background-position: center center;
+    }
+
+    /* Holographic Cyber Grid Overlay */
+    .cyber-overlay {
+      position: fixed; inset: 0; pointer-events: none; z-index: 0;
+      background: radial-gradient(circle at 50% 20%, rgba(168, 85, 247, 0.08) 0%, transparent 60%),
+                  radial-gradient(circle at 80% 80%, rgba(0, 240, 255, 0.06) 0%, transparent 50%);
+    }
+
+    /* App Structure */
+    .app-layout {
+      display: flex;
+      min-height: 100vh;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Sidebar Navigation Deck */
+    aside.hud-sidebar {
+      width: var(--sidebar-w);
+      background: rgba(5, 8, 16, 0.85);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-right: 1px solid var(--panel-border);
+      display: flex; flex-direction: column;
+      position: fixed; top: 0; bottom: 0; left: 0;
+      z-index: 100;
+      box-shadow: 5px 0 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .hud-brand {
+      padding: 24px 20px;
+      display: flex; align-items: center; gap: 14px;
+      border-bottom: 1px solid var(--panel-border);
+      position: relative;
+    }
+    .hud-brand::after {
+      content: ''; position: absolute; bottom: -1px; left: 20px; right: 20px; height: 1px;
+      background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+    }
+
+    .brand-icon {
+      width: 44px; height: 44px; border-radius: 12px;
+      background: linear-gradient(135deg, var(--cyan), var(--purple));
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-hud); font-weight: 900; font-size: 16px; color: #000;
+      box-shadow: 0 0 24px var(--cyan-glow);
+    }
+    .brand-title {
+      font-family: var(--font-hud); font-size: 14px; font-weight: 800;
+      letter-spacing: 1px; text-transform: uppercase;
+      background: linear-gradient(90deg, #fff, var(--cyan));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .brand-tag {
+      font-size: 10px; font-weight: 700; color: var(--purple); letter-spacing: 1px; text-transform: uppercase;
+    }
+
+    /* Nav Links */
+    .hud-menu {
+      padding: 20px 14px; display: flex; flex-direction: column; gap: 8px; flex: 1;
+    }
+    .menu-cat {
+      font-family: var(--font-hud); font-size: 9px; font-weight: 700; color: var(--text-dim);
+      letter-spacing: 1.5px; text-transform: uppercase; padding: 12px 10px 4px;
+    }
+    .nav-btn {
+      display: flex; align-items: center; gap: 12px;
+      padding: 13px 16px; border-radius: var(--radius);
+      color: var(--text-muted); font-size: 13px; font-weight: 600;
+      cursor: pointer; border: 1px solid transparent;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative; overflow: hidden;
+    }
+    .nav-btn svg { width: 18px; height: 18px; stroke-width: 2; transition: all 0.25s ease; }
+    .nav-btn:hover {
+      color: var(--cyan); background: rgba(0, 240, 255, 0.04);
+      border-color: rgba(0, 240, 255, 0.15);
+      box-shadow: inset 0 0 15px rgba(0, 240, 255, 0.05);
+    }
+    .nav-btn:hover svg { transform: translateX(3px); color: var(--cyan); }
+    .nav-btn.active {
+      color: #fff; background: linear-gradient(90deg, rgba(0, 240, 255, 0.12), rgba(168, 85, 247, 0.08));
+      border-color: var(--cyan); box-shadow: 0 0 20px rgba(0, 240, 255, 0.15);
+    }
+    .nav-btn.active::before {
+      content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--cyan);
+      box-shadow: 0 0 10px var(--cyan);
+    }
+
+    /* Radar Widget in Sidebar */
+    .radar-widget {
+      margin: 14px; padding: 16px; border-radius: var(--radius);
+      background: rgba(0, 240, 255, 0.03); border: 1px solid var(--panel-border);
+      display: flex; align-items: center; gap: 14px; position: relative;
+    }
+    .radar-screen {
+      width: 42px; height: 42px; border-radius: 50%; border: 1px solid var(--cyan);
+      position: relative; overflow: hidden; background: rgba(0, 240, 255, 0.05);
+      box-shadow: 0 0 15px var(--cyan-glow);
+    }
+    .radar-line {
+      position: absolute; top: 50%; left: 50%; width: 50%; height: 2px;
+      background: linear-gradient(90deg, var(--cyan), transparent);
+      transform-origin: left center; animation: radarScan 3s linear infinite;
+    }
+    @keyframes radarScan { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .radar-info { flex: 1; }
+    .radar-title { font-family: var(--font-hud); font-size: 11px; font-weight: 700; color: var(--text); }
+    .radar-status { font-size: 11px; color: var(--emerald); font-weight: 600; display: flex; align-items: center; gap: 4px; }
+    .radar-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--emerald); box-shadow: 0 0 8px var(--emerald); }
+
+    /* Main Deck View */
+    main.hud-main {
+      margin-left: var(--sidebar-w); flex: 1; display: flex; flex-direction: column; min-width: 0;
+    }
+
+    /* Header Bar */
+    header.hud-header {
+      height: 72px; padding: 0 32px;
+      background: rgba(5, 8, 16, 0.75); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--panel-border);
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 90;
+    }
+    .header-title-box { display: flex; flex-direction: column; }
+    .header-title { font-family: var(--font-hud); font-size: 16px; font-weight: 800; letter-spacing: 1px; color: #fff; }
+    .header-sub { font-size: 11px; color: var(--text-dim); }
+
+    .header-ctrls { display: flex; align-items: center; gap: 16px; }
+    .hud-badge {
+      display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 999px;
+      font-family: var(--font-hud); font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+      border: 1px solid transparent; transition: all 0.3s ease;
+    }
+    .badge-live { background: var(--rose-glow); border-color: var(--rose); color: var(--rose); box-shadow: 0 0 16px var(--rose-glow); }
+    .badge-dry { background: var(--emerald-glow); border-color: var(--emerald); color: var(--emerald); box-shadow: 0 0 16px var(--emerald-glow); }
+    .badge-dot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+
+    /* Content Area */
+    .viewport { padding: 28px 32px 60px; display: flex; flex-direction: column; gap: 24px; }
+    .tab-panel { display: none; flex-direction: column; gap: 24px; animation: hudFadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1); }
+    .tab-panel.active { display: flex; }
+    @keyframes hudFadeIn { from { opacity: 0; transform: translateY(12px) scale(0.99); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
+    /* Tactical Banner */
+    .tactical-banner {
+      background: linear-gradient(135deg, rgba(0, 240, 255, 0.08), rgba(168, 85, 247, 0.05));
+      border: 1px solid var(--cyan); border-radius: var(--radius); padding: 26px 30px;
+      position: relative; overflow: hidden; display: flex; justify-content: space-between; align-items: center; gap: 20px;
+      box-shadow: 0 0 30px var(--panel-glow);
+    }
+    .tactical-banner::before {
+      content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--cyan); box-shadow: 0 0 12px var(--cyan);
+    }
+    .banner-text h2 { font-family: var(--font-hud); font-size: 18px; font-weight: 800; letter-spacing: 1px; margin-bottom: 6px; color: #fff; }
+    .banner-text p { color: var(--text-muted); font-size: 13px; max-width: 620px; line-height: 1.6; }
+
+    .banner-btns { display: flex; gap: 12px; }
+
+    /* Sci-Fi HUD Buttons */
+    .hud-btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      height: 42px; padding: 0 22px; border-radius: var(--radius);
+      font-family: var(--font-hud); font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase;
+      cursor: pointer; border: 1px solid transparent; transition: all 0.25s ease; white-space: nowrap;
+    }
+    .hud-btn-primary {
+      background: linear-gradient(135deg, var(--cyan), #0284c7); color: #000;
+      box-shadow: 0 0 20px var(--cyan-glow); font-weight: 900;
+    }
+    .hud-btn-primary:hover {
+      transform: translateY(-2px); box-shadow: 0 0 30px var(--cyan-glow); background: linear-gradient(135deg, #38bdf8, var(--cyan));
+    }
+    .hud-btn-secondary {
+      background: rgba(255, 255, 255, 0.04); color: var(--text); border-color: var(--panel-border);
+    }
+    .hud-btn-secondary:hover {
+      background: rgba(0, 240, 255, 0.08); border-color: var(--cyan); color: var(--cyan);
+    }
+    .hud-btn-danger {
+      background: var(--rose-glow); color: var(--rose); border-color: var(--rose);
+    }
+
+    /* Metric HUD Cards */
+    .metrics-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; }
+    .hud-card {
+      background: var(--panel); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--panel-border); border-radius: var(--radius); padding: 22px;
+      position: relative; transition: all 0.3s ease; overflow: hidden;
+    }
+    .hud-card::after {
+      content: ''; position: absolute; top: 0; right: 0; width: 30px; height: 30px;
+      background: linear-gradient(135deg, transparent 50%, rgba(0, 240, 255, 0.15) 50%);
+    }
+    .hud-card:hover {
+      border-color: var(--cyan); transform: translateY(-4px); box-shadow: 0 10px 30px rgba(0, 240, 255, 0.12);
+    }
+    .card-label { font-family: var(--font-hud); font-size: 10px; font-weight: 700; color: var(--text-dim); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px; }
+    .card-val { font-family: var(--font-hud); font-size: 26px; font-weight: 900; color: #fff; letter-spacing: -0.5px; margin-bottom: 6px; }
+    .card-sub { font-size: 11px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
+
+    /* Equalizer Soundwave Widget */
+    .eq-bar-wrap { display: flex; align-items: flex-end; gap: 3px; height: 16px; }
+    .eq-bar { width: 3px; background: var(--cyan); border-radius: 2px; animation: eqPulse 1.2s ease-in-out infinite alternate; }
+    .eq-bar:nth-child(1) { height: 40%; animation-delay: 0.1s; }
+    .eq-bar:nth-child(2) { height: 90%; animation-delay: 0.3s; }
+    .eq-bar:nth-child(3) { height: 60%; animation-delay: 0.2s; }
+    .eq-bar:nth-child(4) { height: 100%; animation-delay: 0.4s; }
+    @keyframes eqPulse { 0% { transform: scaleY(0.3); } 100% { transform: scaleY(1); } }
+
+    /* Stepper Flow */
+    .flow-card {
+      background: var(--panel); border: 1px solid var(--panel-border); border-radius: var(--radius); padding: 24px;
+    }
+    .flow-title-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .flow-title { font-family: var(--font-hud); font-size: 13px; font-weight: 800; color: #fff; letter-spacing: 1px; text-transform: uppercase; display: flex; align-items: center; gap: 10px; }
+    .flow-title-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 10px var(--cyan); }
+
+    .stepper-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+    .stepper-box {
+      background: rgba(0, 0, 0, 0.4); border: 1px solid var(--panel-border); border-radius: 10px; padding: 16px;
+      display: flex; flex-direction: column; gap: 6px; position: relative; transition: all 0.2s ease;
+    }
+    .stepper-box:hover { border-color: var(--cyan); background: rgba(0, 240, 255, 0.04); }
+    .step-tag { font-family: var(--font-hud); font-size: 9px; font-weight: 800; color: var(--cyan); letter-spacing: 1px; }
+    .step-head { font-size: 13px; font-weight: 700; color: #fff; }
+    .step-desc { font-size: 11px; color: var(--text-dim); }
+
+    /* Split Grid */
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+    /* Data Tables */
+    .table-box { overflow-x: auto; border: 1px solid var(--panel-border); border-radius: 10px; }
+    table.hud-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 12px; }
+    table.hud-table th {
+      background: rgba(0, 0, 0, 0.6); padding: 12px 14px; font-family: var(--font-hud); font-size: 10px; font-weight: 700;
+      color: var(--text-dim); letter-spacing: 1px; text-transform: uppercase; border-bottom: 1px solid var(--panel-border);
+    }
+    table.hud-table td { padding: 12px 14px; border-bottom: 1px solid rgba(255, 255, 255, 0.03); color: var(--text-muted); }
+    table.hud-table tbody tr:hover { background: rgba(0, 240, 255, 0.03); color: #fff; }
+
+    .chip {
+      display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; border-radius: 4px;
+      font-family: var(--font-mono); font-size: 10px; font-weight: 700; text-transform: uppercase;
+    }
+    .chip-green { background: var(--emerald-glow); color: var(--emerald); border: 1px solid var(--emerald); }
+    .chip-red { background: var(--rose-glow); color: var(--rose); border: 1px solid var(--rose); }
+    .chip-dim { background: rgba(255, 255, 255, 0.05); color: var(--text-dim); }
+
+    code.code-tech {
+      font-family: var(--font-mono); font-size: 11px; padding: 2px 6px; border-radius: 4px;
+      background: rgba(0, 240, 255, 0.08); color: var(--cyan); border: 1px solid rgba(0, 240, 255, 0.2);
+    }
+
+    /* Forms */
+    .form-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group.full { grid-column: 1 / -1; }
+    .hud-label { font-family: var(--font-hud); font-size: 10px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.8px; text-transform: uppercase; }
+
+    input.hud-input, select.hud-input, textarea.hud-input {
+      width: 100%; height: 42px; padding: 0 14px; border-radius: 8px;
+      background: rgba(0, 0, 0, 0.6); border: 1px solid var(--panel-border); color: #fff;
+      font-family: var(--font-mono); font-size: 12px; outline: none; transition: all 0.2s ease;
+    }
+    textarea.hud-input { height: 90px; padding: 10px 14px; resize: vertical; }
+    input.hud-input:focus, select.hud-input:focus, textarea.hud-input:focus {
+      border-color: var(--cyan); box-shadow: 0 0 15px var(--cyan-glow);
+    }
+
+    .terminal {
+      background: #020305; border: 1px solid var(--panel-border); border-radius: 8px; padding: 14px;
+      font-family: var(--font-mono); font-size: 11px; color: #a7f3d0; max-height: 240px; overflow-y: auto; white-space: pre-wrap;
+    }
+
+    /* Toast */
+    #toast-wrap { position: fixed; bottom: 24px; right: 24px; display: flex; flex-direction: column-reverse; gap: 8px; z-index: 9999; pointer-events: none; }
+    .toast-msg {
+      padding: 12px 18px; border-radius: 8px; font-family: var(--font-hud); font-size: 11px; font-weight: 700; letter-spacing: 0.5px;
+      backdrop-filter: blur(20px); transform: translateX(30px); opacity: 0; transition: all 0.3s ease; pointer-events: auto;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    }
+    .toast-msg.show { transform: translateX(0); opacity: 1; }
+    .t-success { background: rgba(0, 255, 157, 0.15); border: 1px solid var(--emerald); color: var(--emerald); }
+    .t-error { background: rgba(255, 0, 85, 0.15); border: 1px solid var(--rose); color: var(--rose); }
+    .t-info { background: rgba(0, 240, 255, 0.15); border: 1px solid var(--cyan); color: var(--cyan); }
+
+    @media (max-width: 1024px) {
+      aside.hud-sidebar { transform: translateX(-100%); }
+      main.hud-main { margin-left: 0; }
+      .metrics-row { grid-template-columns: repeat(2, 1fr); }
+      .stepper-grid { grid-template-columns: 1fr; }
+      .grid-2 { grid-template-columns: 1fr; }
+      .form-grid-3 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="cyber-overlay"></div>
+  <div id="toast-wrap"></div>
+
+  <div class="app-layout">
+    
+    <!-- Sidebar HUD Deck -->
+    <aside class="hud-sidebar">
+      <div class="hud-brand">
+        <div class="brand-icon">AV</div>
+        <div>
+          <div class="brand-title">AgentVentas</div>
+          <div class="brand-tag">Cyber OS v0.3</div>
+        </div>
+      </div>
+
+      <nav class="hud-menu">
+        <div class="menu-cat">Control Tactical Deck</div>
+        <a class="nav-btn active" data-tab="tab-overview">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+          Command Hub
+        </a>
+        <a class="nav-btn" data-tab="tab-monitor">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          Live Stream Tracker
+        </a>
+
+        <div class="menu-cat">Config & Rules</div>
+        <a class="nav-btn" data-tab="tab-settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+          Automation Rules
+        </a>
+
+        <div class="menu-cat">Diagnostics</div>
+        <a class="nav-btn" data-tab="tab-sandbox">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m8 3 4 8 5-5 5 15H2L8 3z"/></svg>
+          Simulation Deck
+        </a>
+        <a class="nav-btn" data-tab="tab-system">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          System Telemetry
+        </a>
+      </nav>
+
+      <!-- Sidebar Radar Widget -->
+      <div class="radar-widget">
+        <div class="radar-screen">
+          <div class="radar-line"></div>
+        </div>
+        <div class="radar-info">
+          <div class="radar-title">Bot Engine</div>
+          <div class="radar-status" id="sidebar-bot-status"><span class="radar-dot"></span> Online 5s</div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Deck -->
+    main.hud-main>
+      
+      <!-- Topbar -->
+      <header class="hud-header">
+        <div class="header-title-box">
+          <div class="header-title" id="deck-title">Command Hub</div>
+          <div class="header-sub">Bitrix24 Automated Sales Operations System</div>
+        </div>
+
+        <div class="header-ctrls">
+          <div class="eq-bar-wrap">
+            <div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div><div class="eq-bar"></div>
+          </div>
+          <div id="mode-badge" class="hud-badge badge-dry">
+            <span class="badge-dot"></span>
+            <span id="mode-text">DRY RUN</span>
+          </div>
+        </div>
+      </header>
+
+      <div class="viewport">
+        
+        <!-- TAB 1: COMMAND HUB -->
+        <div id="tab-overview" class="tab-panel active">
+          
+          <div class="tactical-banner">
+            <div class="banner-text">
+              <h2>Bitrix24 Autonomous Lead Claiming Engine</h2>
+              <p>Capta prospectos entrantes en tiempo real, asigna automáticamente asesores comerciales y envía respuestas iniciales sin latencia.</p>
+            </div>
+            <div class="banner-btns">
+              <button id="btn-scan" class="hud-btn hud-btn-primary">⚡ Scan Inmediato</button>
+              <button id="btn-toggle" class="hud-btn hud-btn-secondary">⏸ Pausar Bot</button>
+            </div>
+          </div>
+
+          <!-- KPI Cards -->
+          <div class="metrics-row">
+            <div class="hud-card">
+              <div class="card-label">Estado Engine</div>
+              <div class="card-val" id="kpi-state" style="color:var(--emerald);">RUNNING</div>
+              <div class="card-sub"><span id="kpi-interval">5s</span> frecuencia de barrido</div>
+            </div>
+            <div class="hud-card">
+              <div class="card-label">Leads Candidatos</div>
+              <div class="card-val" id="kpi-candidates" style="color:var(--cyan);">0</div>
+              <div class="card-sub">Esperando auto-asignación</div>
+            </div>
+            <div class="hud-card">
+              <div class="card-label">ID Operador</div>
+              <div class="card-val" id="kpi-operator" style="color:var(--purple);">&mdash;</div>
+              <div class="card-sub">Asesor Bitrix24 asignado</div>
+            </div>
+            <div class="hud-card">
+              <div class="card-label">Etapa Destino CRM</div>
+              <div class="card-val" id="kpi-stage" style="color:var(--amber);">&mdash;</div>
+              <div class="card-sub">Fase de seguimiento</div>
+            </div>
+          </div>
+
+          <!-- Visual Flow Stepper -->
+          <div class="flow-card">
+            <div class="flow-title-bar">
+              <div class="flow-title"><span class="flow-title-dot"></span> Flujo de Procesamiento Autónomo</div>
+              <span class="hud-badge badge-dry">Auto-Pipeline</span>
+            </div>
+
+            <div class="stepper-grid">
+              <div class="stepper-box">
+                <span class="step-tag">Paso 01</span>
+                <div class="step-head">Bitrix Webhook</div>
+                <div class="step-desc">Captura del evento en etapa origen</div>
+              </div>
+              <div class="stepper-box">
+                <span class="step-tag">Paso 02</span>
+                <span class="step-head">Filtro Conector</span>
+                <span class="step-desc">Verificación de la canal de entrada</span>
+              </div>
+              <div class="stepper-box">
+                <span class="step-tag">Paso 03</span>
+                <span class="step-head">Auto-Claim</span>
+                <span class="step-desc">Asignación al operador configurado</span>
+              </div>
+              <div class="stepper-box">
+                <span class="step-tag">Paso 04</span>
+                <span class="step-head">Avance CRM</span>
+                <span class="step-desc">Transición automática a etapa destino</span>
+              </div>
+              <div class="stepper-box">
+                <span class="step-tag">Paso 05</span>
+                <span class="step-head">Auto-Respuesta</span>
+                <span class="step-desc">Envío del script de bienvenida</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Tables Grid -->
+          <div class="grid-2">
+            <div class="flow-card">
+              <div class="flow-title-bar">
+                <div class="flow-title"><span class="flow-title-dot"></span> Candidatos Activos</div>
+                <span id="cand-count-badge" class="chip chip-green">0 Activos</span>
+              </div>
+              <div class="table-box">
+                <table class="hud-table">
+                  <thead><tr><th>Hora</th><th>Deal</th><th>Chat</th><th>Motivo</th></tr></thead>
+                  <tbody id="tbl-current-body">
+                    <tr><td colspan="4" style="text-align:center; padding:20px; color:var(--text-dim);">Sin candidatos pendientes</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="flow-card">
+              <div class="flow-title-bar">
+                <div class="flow-title"><span class="flow-title-dot"></span> Últimas Acciones</div>
+                <span class="chip chip-dim">Historial</span>
+              </div>
+              <div class="table-box">
+                <table class="hud-table">
+                  <thead><tr><th>Hora</th><th>Estado</th><th>Deal</th><th>Acciones</th></tr></thead>
+                  <tbody id="tbl-recent-body">
+                    <tr><td colspan="4" style="text-align:center; padding:20px; color:var(--text-dim);">Sin interacciones aún</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+
+        <!-- TAB 2: LIVE STREAM MONITOR -->
+        <div id="tab-monitor" class="tab-panel">
+          <div class="flow-card">
+            <div class="flow-title-bar">
+              <div class="flow-title"><span class="flow-title-dot"></span> Telemetría & Monitor Completo</div>
+              <div style="display:flex; gap:10px;">
+                <input id="search-input" class="hud-input" style="width:240px;" placeholder="🔍 Filtrar Deal o Chat ID...">
+                <button id="refresh-mon-btn" class="hud-btn hud-btn-secondary">Actualizar</button>
+              </div>
+            </div>
+
+            <div class="table-box">
+              <table class="hud-table">
+                <thead>
+                  <tr><th>Timestamp</th><th>Estado</th><th>Deal ID</th><th>Chat ID</th><th>Diagnóstico</th><th>Acciones Ejecutadas</th></tr>
+                </thead>
+                <tbody id="tbl-full-monitor">
+                  <tr><td colspan="6" style="text-align:center; padding:30px; color:var(--text-dim);">Cargando telemetría...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+
+        <!-- TAB 3: RULES & CONFIG -->
+        <div id="tab-settings" class="tab-panel">
+          <div class="flow-card">
+            <div class="flow-title-bar">
+              <div class="flow-title"><span class="flow-title-dot"></span> Reglas de Automatización En Vivo</div>
+              <div style="display:flex; gap:10px;">
+                <button id="save-cfg-btn" class="hud-btn hud-btn-primary">Guardar Cambios</button>
+                <button id="reset-cfg-btn" class="hud-btn hud-btn-danger">Borrar Overrides</button>
+              </div>
+            </div>
+
+            <div class="form-grid-3">
+              <div class="form-group">
+                <label class="hud-label">Modo Operativo</label>
+                <select id="cfg-mode" class="hud-input">
+                  <option value="dry_run">dry_run (Simulación)</option>
+                  <option value="live">live (Producción Bitrix24)</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="hud-label">Etapa Origen (Asignación)</label>
+                <input id="cfg-stage-src" class="hud-input" placeholder="C16:UC_GIKKS8">
+              </div>
+
+              <div class="form-group">
+                <label class="hud-label">Etapa Destino (Target)</label>
+                <input id="cfg-stage-dst" class="hud-input" placeholder="C16:UC_L8W7U1">
+              </div>
+
+              <div class="form-group">
+                <label class="hud-label">ID Categoría CRM</label>
+                <input id="cfg-category" class="hud-input" placeholder="16">
+              </div>
+
+              <div class="form-group">
+                <label class="hud-label">ID Operador / Asesor</label>
+                <input id="cfg-operator" class="hud-input" placeholder="2381716">
+              </div>
+
+              <div class="form-group">
+                <label class="hud-label">Intervalo Scanner (seg)</label>
+                <input id="cfg-interval" class="hud-input" type="number" placeholder="5">
+              </div>
+
+              <div class="form-group">
+                <label class="hud-label">Límite por Vuelta</label>
+                <input id="cfg-limit" class="hud-input" type="number" placeholder="8">
+              </div>
+
+              <div class="form-group">
+                <label class="hud-label">Bot Scanner Habilitado</label>
+                <select id="cfg-scan-enabled" class="hud-input">
+                  <option value="true">True (Activo)</option>
+                  <option value="false">False (Desactivado)</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="hud-label">Conectores Permitidos</label>
+                <input id="cfg-connectors" class="hud-input" placeholder="opcional">
+              </div>
+
+              <div class="form-group full">
+                <label class="hud-label">URL Webhook Bitrix24</label>
+                <input id="cfg-webhook" class="hud-input" placeholder="https://tu-dominio.bitrix24.es/rest/1/xxxxxxxx/">
+              </div>
+
+              <div class="form-group full">
+                <label class="hud-label">Mensaje Automático de Bienvenida</label>
+                <textarea id="cfg-greeting" class="hud-input" placeholder="Mensaje inicial enviado al prospecto..."></textarea>
+              </div>
+            </div>
+
+            <div style="margin-top:16px;">
+              <label class="hud-label" style="margin-bottom:8px;">Runtime Server Log</label>
+              <div id="cfg-console" class="terminal">Los ajustes guardados aquí surten efecto inmediato.</div>
+            </div>
+          </div>
+        </div>
+
+
+        <!-- TAB 4: SIMULATION SANDBOX -->
+        <div id="tab-sandbox" class="tab-panel">
+          <div class="flow-card">
+            <div class="flow-title-bar">
+              <div class="flow-title"><span class="flow-title-dot"></span> Simulation & Test Deck</div>
+            </div>
+
+            <form id="sb-form" style="display:grid; grid-template-columns: 1fr 1fr auto; gap:16px; align-items:end;">
+              <div class="form-group">
+                <label class="hud-label">Deal ID</label>
+                <input id="sb-deal" class="hud-input" placeholder="Ej: 2804388">
+              </div>
+              <div class="form-group">
+                <label class="hud-label">Chat ID</label>
+                <input id="sb-chat" class="hud-input" placeholder="Ej: 2758584">
+              </div>
+              <button type="submit" class="hud-btn hud-btn-primary">Ejecutar Simulación</button>
+            </form>
+
+            <div style="margin-top:16px;">
+              <label class="hud-label" style="margin-bottom:8px;">Diagnostic Output</label>
+              <div id="sb-output" class="terminal">Esperando simulación...</div>
+            </div>
+          </div>
+        </div>
+
+
+        <!-- TAB 5: TELEMETRY & HEALTH -->
+        <div id="tab-system" class="tab-panel">
+          <div class="grid-2">
+            <div class="flow-card">
+              <div class="flow-title-bar"><div class="flow-title">Endpoints Backend</div></div>
+              <div id="sys-endpoints">Cargando datos...</div>
+            </div>
+            <div class="flow-card">
+              <div class="flow-title-bar"><div class="flow-title">Estado de Seguridad</div></div>
+              <div id="sys-security">Cargando datos...</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const params = new URLSearchParams(location.search);
+    const token = params.get('token') || '';
+    const headers = token ? {'x-dashboard-token': token} : {};
+
+    const $ = (s) => document.querySelector(s);
+    const $$ = (s) => document.querySelectorAll(s);
+
+    function fmt(v) { return v === null || v === undefined || v === '' ? '—' : v; }
+    function fmtTime(v) {
+      if (!v) return '—';
+      try { return new Date(v).toLocaleTimeString(); } catch(e) { return v; }
+    }
+
+    function toast(msg, type = 'info') {
+      const wrap = $('#toast-wrap');
+      const el = document.createElement('div');
+      el.className = `toast-msg t-${type}`;
+      el.textContent = msg;
+      wrap.appendChild(el);
+      requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('show')));
+      setTimeout(() => {
+        el.classList.remove('show');
+        el.addEventListener('transitionend', () => el.remove());
+      }, 3600);
+    }
+
+    /* Tabs */
+    $$('.nav-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tab = btn.getAttribute('data-tab');
+        if (!tab) return;
+        $$('.nav-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        $$('.tab-panel').forEach(p => p.classList.remove('active'));
+        $(`#${tab}`).classList.add('active');
+        $('#deck-title').textContent = btn.textContent.trim();
+      });
+    });
+
+    /* Status Loader */
+    async function loadStatus() {
+      try {
+        const res = await fetch('/api/bitrix/status', { headers });
+        if (!res.ok) return;
+        const d = await res.json();
+
+        const badge = $('#mode-badge');
+        const txt = $('#mode-text');
+        if (d.is_live) {
+          badge.className = 'hud-badge badge-live';
+          txt.textContent = 'LIVE MODE';
+        } else {
+          badge.className = 'hud-badge badge-dry';
+          txt.textContent = 'DRY RUN';
+        }
+
+        $('#kpi-operator').textContent = fmt(d.operator_user_id);
+        $('#kpi-stage').textContent = fmt(d.target_stage_id);
+
+        $('#sys-endpoints').innerHTML = `
+          <p style="font-size:12px; margin-bottom:8px;">Health URL: <code class="code-tech">${d.health_url}</code></p>
+          <p style="font-size:12px; margin-bottom:8px;">Event Webhook: <code class="code-tech">${d.event_url}</code></p>
+          <p style="font-size:12px;">Webhook State: <strong>${d.webhook_configured ? '✓ OK' : '❌ Pending'}</strong></p>
+        `;
+
+        $('#sys-security').innerHTML = `
+          <p style="font-size:12px; margin-bottom:8px;">Token Protection: <strong>${d.dashboard_token_enabled ? '🔒 Active' : '⚠️ Disabled'}</strong></p>
+          <p style="font-size:12px;">Active Overrides: <strong>${(d.runtime_overrides || []).length} keys</strong></p>
+        `;
+
+      } catch(e) { console.error(e); }
+    }
+
+    /* Scanner Render */
+    function renderScanner(d) {
+      $('#kpi-state').textContent = d.paused ? 'PAUSED' : (d.enabled ? 'RUNNING' : 'STOPPED');
+      $('#kpi-state').style.color = d.paused ? 'var(--amber)' : (d.enabled ? 'var(--emerald)' : 'var(--rose)');
+      $('#kpi-interval').textContent = `${d.interval_seconds}s`;
+
+      const cands = d.current_candidates || [];
+      $('#kpi-candidates').textContent = cands.length;
+      $('#cand-count-badge').textContent = `${cands.length} Activos`;
+
+      $('#sidebar-bot-status').innerHTML = `<span class="radar-dot"></span> ${d.paused ? 'Pausado' : (d.enabled ? 'Online ' + d.interval_seconds + 's' : 'Off')}`;
+
+      // Current Table
+      const curBody = $('#tbl-current-body');
+      curBody.innerHTML = cands.length === 0 ? 
+        `<tr><td colspan="4" style="text-align:center; padding:20px; color:var(--text-dim);">Sin candidatos pendientes</td></tr>` :
+        cands.map(c => `
+          <tr>
+            <td>${fmtTime(c.timestamp)}</td>
+            <td><code class="code-tech">${fmt(c.deal_id)}</code></td>
+            <td><code class="code-tech">${fmt(c.chat_id)}</code></td>
+            <td>${c.reason}</td>
+          </tr>
+        `).join('');
+
+      // Recent & Full Table
+      const recent = d.recent || [];
+      const recBody = $('#tbl-recent-body');
+      const monBody = $('#tbl-full-monitor');
+
+      recBody.innerHTML = recent.length === 0 ?
+        `<tr><td colspan="4" style="text-align:center; padding:20px; color:var(--text-dim);">Sin interacciones aún</td></tr>` :
+        recent.slice(0, 5).map(r => `
+          <tr>
+            <td>${fmtTime(r.timestamp)}</td>
+            <td><span class="chip ${r.status === 'candidate' || r.status === 'claimed' ? 'chip-green' : (r.status === 'error' ? 'chip-red' : 'chip-dim')}">${r.status}</span></td>
+            <td><code class="code-tech">${fmt(r.deal_id)}</code></td>
+            <td>${(r.actions || []).join(', ') || '—'}</td>
+          </tr>
+        `).join('');
+
+      monBody.innerHTML = recent.length === 0 ?
+        `<tr><td colspan="6" style="text-align:center; padding:30px; color:var(--text-dim);">Cargando telemetría...</td></tr>` :
+        recent.map(r => `
+          <tr>
+            <td>${fmtTime(r.timestamp)}</td>
+            <td><span class="chip ${r.status === 'candidate' || r.status === 'claimed' ? 'chip-green' : (r.status === 'error' ? 'chip-red' : 'chip-dim')}">${r.status}</span></td>
+            <td><code class="code-tech">${fmt(r.deal_id)}</code></td>
+            <td><code class="code-tech">${fmt(r.chat_id)}</code></td>
+            <td>${r.reason}</td>
+            <td>${(r.actions || []).join(', ') || '—'}</td>
+          </tr>
+        `).join('');
+    }
+
+    async function loadScanner() {
+      try {
+        const res = await fetch('/api/bitrix/scanner', { headers });
+        if (res.ok) renderScanner(await res.json());
+      } catch(e) { console.error(e); }
+    }
+
+    /* Settings */
+    async function loadSettings() {
+      try {
+        const res = await fetch('/api/bitrix/settings', { headers });
+        if (!res.ok) return;
+        const d = await res.json();
+        const v = d.values || {};
+        $('#cfg-mode').value = v.BITRIX_AUTOMATION_MODE || 'dry_run';
+        $('#cfg-stage-src').value = v.BITRIX_ASSIGNMENT_STAGE_ID || '';
+        $('#cfg-stage-dst').value = v.BITRIX_TARGET_STAGE_ID || '';
+        $('#cfg-category').value = v.BITRIX_CATEGORY_ID != null ? v.BITRIX_CATEGORY_ID : '';
+        $('#cfg-operator').value = v.BITRIX_OPERATOR_USER_ID != null ? v.BITRIX_OPERATOR_USER_ID : '';
+        $('#cfg-interval').value = v.BITRIX_SCAN_INTERVAL_SECONDS != null ? v.BITRIX_SCAN_INTERVAL_SECONDS : '';
+        $('#cfg-limit').value = v.BITRIX_SCAN_LIMIT != null ? v.BITRIX_SCAN_LIMIT : '';
+        $('#cfg-scan-enabled').value = String(v.BITRIX_SCAN_ENABLED != null ? v.BITRIX_SCAN_ENABLED : 'true');
+        $('#cfg-connectors').value = v.BITRIX_ALLOWED_CONNECTORS || '';
+        $('#cfg-webhook').value = v.BITRIX_WEBHOOK_BASE_URL || '';
+        $('#cfg-greeting').value = v.BITRIX_GREETING_MESSAGE || '';
+      } catch(e) { console.error(e); }
+    }
+
+    $('#save-cfg-btn').addEventListener('click', async () => {
+      const payload = {
+        BITRIX_AUTOMATION_MODE: $('#cfg-mode').value,
+        BITRIX_ASSIGNMENT_STAGE_ID: $('#cfg-stage-src').value.trim(),
+        BITRIX_TARGET_STAGE_ID: $('#cfg-stage-dst').value.trim(),
+        BITRIX_CATEGORY_ID: $('#cfg-category').value.trim(),
+        BITRIX_OPERATOR_USER_ID: $('#cfg-operator').value.trim(),
+        BITRIX_SCAN_INTERVAL_SECONDS: $('#cfg-interval').value.trim(),
+        BITRIX_SCAN_LIMIT: $('#cfg-limit').value.trim(),
+        BITRIX_SCAN_ENABLED: $('#cfg-scan-enabled').value,
+        BITRIX_ALLOWED_CONNECTORS: $('#cfg-connectors').value.trim(),
+        BITRIX_GREETING_MESSAGE: $('#cfg-greeting').value
+      };
+      const wh = $('#cfg-webhook').value.trim();
+      if (wh && !wh.includes('...')) payload.BITRIX_WEBHOOK_BASE_URL = wh;
+
+      try {
+        const res = await fetch('/api/bitrix/settings', {
+          method: 'PUT',
+          headers: Object.assign({'content-type':'application/json'}, headers),
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        $('#cfg-console').textContent = JSON.stringify(data, null, 2);
+        toast('Reglas actualizadas en memoria', 'success');
+        await loadStatus(); await loadScanner();
+      } catch(e) { toast('Error guardando reglas', 'error'); }
+    });
+
+    $('#reset-cfg-btn').addEventListener('click', async () => {
+      try {
+        const res = await fetch('/api/bitrix/settings', { method:'DELETE', headers });
+        const data = await res.json();
+        $('#cfg-console').textContent = JSON.stringify(data, null, 2);
+        toast('Overrides borrados', 'info');
+        await loadSettings(); await loadStatus(); await loadScanner();
+      } catch(e) { toast('Error borrando overrides', 'error'); }
+    });
+
+    /* Quick Scan & Toggle */
+    $('#btn-scan').addEventListener('click', async () => {
+      toast('Ejecutando escaneo manual...', 'info');
+      try {
+        const res = await fetch('/api/bitrix/scan', { method:'POST', headers });
+        if (res.ok) {
+          const d = await res.json();
+          renderScanner(d.scanner || d);
+          toast('Escaneo finalizado', 'success');
+        }
+      } catch(e) { toast('Error en escaneo', 'error'); }
+    });
+
+    let botPaused = false;
+    $('#btn-toggle').addEventListener('click', async () => {
+      const path = botPaused ? '/api/bitrix/scanner/resume' : '/api/bitrix/scanner/pause';
+      try {
+        const res = await fetch(path, { method:'POST', headers });
+        if (res.ok) {
+          botPaused = !botPaused;
+          $('#btn-toggle').textContent = botPaused ? '▶ Reanudar Bot' : '⏸ Pausar Bot';
+          renderScanner(await res.json());
+          toast(botPaused ? 'Bot Pausado' : 'Bot Reanudado', botPaused ? 'info' : 'success');
+        }
+      } catch(e) { toast('Error cambiando estado', 'error'); }
+    });
+
+    /* Sandbox */
+    $('#sb-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const out = $('#sb-output');
+      out.textContent = 'Simulando algoritmo...';
+      try {
+        const res = await fetch('/api/bitrix/check', {
+          method: 'POST',
+          headers: Object.assign({'content-type':'application/json'}, headers),
+          body: JSON.stringify({ deal_id: $('#sb-deal').value.trim(), chat_id: $('#sb-chat').value.trim() })
+        });
+        const data = await res.json();
+        out.textContent = JSON.stringify(data, null, 2);
+        toast(`Resultado: ${data.status}`, 'success');
+      } catch(e) { out.textContent = String(e); toast('Error en simulación', 'error'); }
+    });
+
+    /* Init */
+    async function init() {
+      await loadStatus(); await loadScanner(); await loadSettings();
+      setInterval(async () => { await loadStatus(); await loadScanner(); }, 4000);
+    }
+    init();
+  </script>
+</body>
+</html>
