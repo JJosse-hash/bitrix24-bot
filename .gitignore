@@ -6,7 +6,10 @@ __pycache__/
 .pytest_cache/
 .env
 .DS_Store
-data/raw/*
-data/processed/*
-!data/raw/.gitkeep
-!data/processed/.gitkeep
+/bitrix24-bot-upload/
+/docker-compose.yml
+/docker/
+/package.json
+/package-lock.json
+/scripts/
+/data/

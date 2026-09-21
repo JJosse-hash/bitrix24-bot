@@ -39,7 +39,8 @@ else
   echo "No existe .venv; salto pruebas locales."
 fi
 
-git add -A
+git add -u
+git add .gitignore README.md render.yaml subir-agentventas.sh apps/api "AgentVentas BOT"
 
 if git diff --cached --quiet; then
   echo "No hay cambios para subir."
