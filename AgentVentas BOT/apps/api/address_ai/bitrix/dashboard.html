@@ -3,570 +3,1268 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Bitrix24 Bot — Dashboard</title>
+  <title>AgentVentas AI — Control Center & Automation OS</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #06070b;
-      --surface: rgba(12, 14, 22, 0.6);
-      --surface-hover: rgba(18, 20, 30, 0.75);
-      --surface-input: rgba(8, 10, 16, 0.6);
-      --border: rgba(255, 255, 255, 0.055);
-      --border-hover: rgba(255, 255, 255, 0.1);
-      --border-focus: rgba(129, 140, 248, 0.45);
-      --text: #edeff3;
-      --text-2: #9196a8;
-      --text-3: #555a6e;
-      --accent: #818cf8;
-      --accent-glow: rgba(129, 140, 248, 0.18);
-      --green: #34d399;
-      --green-dim: rgba(52, 211, 153, 0.1);
-      --red: #fb7185;
-      --red-dim: rgba(251, 113, 133, 0.1);
-      --yellow: #fbbf24;
-      --r: 14px;
+      --bg: #07090e;
+      --bg-alt: #0c0f17;
+      --panel: rgba(15, 19, 29, 0.75);
+      --panel-solid: #0f131d;
+      --panel-hover: rgba(22, 28, 42, 0.85);
+      --panel-active: rgba(28, 35, 52, 0.9);
+      --input-bg: rgba(10, 13, 20, 0.8);
+      
+      --border: rgba(255, 255, 255, 0.07);
+      --border-subtle: rgba(255, 255, 255, 0.04);
+      --border-hover: rgba(255, 255, 255, 0.15);
+      --border-focus: #6366f1;
+      
+      --accent: #6366f1;
+      --accent-light: #818cf8;
+      --accent-glow: rgba(99, 102, 241, 0.25);
+      --cyan: #06b6d4;
+      --cyan-glow: rgba(6, 182, 212, 0.2);
+      --emerald: #10b981;
+      --emerald-glow: rgba(16, 185, 129, 0.2);
+      --rose: #f43f5e;
+      --rose-glow: rgba(244, 63, 94, 0.2);
+      --amber: #f59e0b;
+      --purple: #8b5cf6;
+
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      --text-dark: #475569;
+
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 18px;
+      --radius-xl: 24px;
+      
+      --sidebar-width: 260px;
+      --header-height: 70px;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; }
-
-    body {
-      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    
+    html, body {
+      height: 100%;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
       background: var(--bg);
       color: var(--text);
-      line-height: 1.55;
-      min-height: 100dvh;
+      overflow-x: hidden;
       -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
     }
 
-    /* ── Ambient Background ── */
-    .bg-glow {
-      position: fixed; inset: 0;
-      overflow: hidden;
-      pointer-events: none;
+    /* Ambient Background Glow */
+    .ambient-bg {
+      position: fixed;
+      inset: 0;
       z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
     }
-    .bg-glow::before, .bg-glow::after {
-      content: ''; position: absolute; border-radius: 50%;
+    .ambient-bg::before {
+      content: '';
+      position: absolute;
+      top: -20%; left: 15%;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(99, 102, 241, 0.12) 0%, transparent 70%);
+      filter: blur(80px);
+      animation: pulseGlow 12s ease-in-out infinite alternate;
     }
-    .bg-glow::before {
-      width: 700px; height: 700px;
-      top: -250px; left: -150px;
-      background: radial-gradient(circle, rgba(99, 102, 241, 0.08), transparent 70%);
-      animation: drift 22s ease-in-out infinite;
-    }
-    .bg-glow::after {
-      width: 550px; height: 550px;
-      bottom: -180px; right: -80px;
-      background: radial-gradient(circle, rgba(139, 92, 246, 0.065), transparent 70%);
-      animation: drift 28s ease-in-out infinite reverse;
+    .ambient-bg::after {
+      content: '';
+      position: absolute;
+      bottom: -10%; right: 10%;
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(6, 182, 212, 0.08) 0%, transparent 70%);
+      filter: blur(90px);
+      animation: pulseGlow 16s ease-in-out infinite alternate-reverse;
     }
 
-    /* ── Header ── */
-    header {
-      position: sticky; top: 0; z-index: 100;
-      background: rgba(6, 7, 11, 0.72);
-      backdrop-filter: blur(24px) saturate(180%);
-      -webkit-backdrop-filter: blur(24px) saturate(180%);
+    @keyframes pulseGlow {
+      0% { transform: scale(1) translate(0, 0); opacity: 0.8; }
+      100% { transform: scale(1.15) translate(30px, -20px); opacity: 1; }
+    }
+
+    /* Layout Structure */
+    .app-container {
+      display: flex;
+      min-height: 100vh;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Sidebar Navigation */
+    aside.sidebar {
+      width: var(--sidebar-width);
+      background: rgba(10, 13, 20, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0; bottom: 0; left: 0;
+      z-index: 100;
+      transition: transform 0.3s ease;
+    }
+
+    .brand {
+      padding: 24px 20px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .brand-logo {
+      width: 42px; height: 42px;
+      border-radius: var(--radius-md);
+      background: linear-gradient(135deg, var(--accent), var(--purple));
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 0 20px var(--accent-glow);
+      font-weight: 800; font-size: 18px; color: #fff;
+    }
+    .brand-title {
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+      background: linear-gradient(90deg, #fff, #cbd5e1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .brand-sub {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--accent-light);
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    .nav-menu {
+      padding: 20px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex: 1;
+      overflow-y: auto;
+    }
+
+    .nav-section-title {
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      padding: 12px 10px 6px;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: var(--radius-md);
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      text-decoration: none;
+    }
+    .nav-item svg {
+      width: 18px; height: 18px;
+      stroke-width: 2;
+      transition: transform 0.2s ease;
+    }
+    .nav-item:hover {
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.03);
+      border-color: rgba(255, 255, 255, 0.05);
+    }
+    .nav-item:hover svg {
+      transform: translateX(2px);
+    }
+    .nav-item.active {
+      color: #fff;
+      background: linear-gradient(90deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.05));
+      border-color: rgba(99, 102, 241, 0.3);
+      box-shadow: inset 3px 0 0 var(--accent);
+    }
+    .nav-item.active svg {
+      color: var(--accent-light);
+    }
+
+    .sidebar-footer {
+      padding: 16px 14px;
+      border-top: 1px solid var(--border-subtle);
+      background: rgba(8, 10, 16, 0.4);
+    }
+    .bot-engine-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .engine-pulse {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      background: var(--emerald);
+      box-shadow: 0 0 10px var(--emerald);
+      position: relative;
+    }
+    .engine-pulse::after {
+      content: '';
+      position: absolute;
+      inset: -4px;
+      border-radius: 50%;
+      border: 2px solid var(--emerald);
+      opacity: 0.6;
+      animation: pulseRing 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+    }
+
+    @keyframes pulseRing {
+      0% { transform: scale(0.6); opacity: 0.9; }
+      100% { transform: scale(1.8); opacity: 0; }
+    }
+
+    .engine-info { flex: 1; }
+    .engine-title { font-size: 12px; font-weight: 700; color: var(--text); }
+    .engine-sub { font-size: 11px; color: var(--text-muted); }
+
+    /* Main Content Area */
+    main.main-content {
+      margin-left: var(--sidebar-width);
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    /* Top Navbar Header */
+    header.topbar {
+      height: var(--header-height);
+      background: rgba(10, 13, 20, 0.7);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
       border-bottom: 1px solid var(--border);
+      padding: 0 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 90;
     }
-    .header-gradient {
-      height: 2px;
-      background: linear-gradient(90deg, transparent, var(--accent), #a78bfa, var(--accent), transparent);
-      opacity: 0.5;
+
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 20px;
     }
-    .bar {
-      max-width: 1300px; margin: 0 auto;
-      padding: 14px 28px;
-      display: flex; align-items: center; justify-content: space-between;
+    .page-heading {
+      display: flex;
+      flex-direction: column;
+    }
+    .page-title {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: -0.4px;
+    }
+    .page-breadcrumb {
+      font-size: 11px;
+      color: var(--text-dim);
+      font-weight: 500;
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
       gap: 16px;
     }
-    .bar-left { display: flex; align-items: center; gap: 14px; }
-    .logo {
-      width: 42px; height: 42px;
-      border-radius: 11px;
-      background: linear-gradient(135deg, #6366f1, #8b5cf6);
-      display: flex; align-items: center; justify-content: center;
-      font-weight: 800; font-size: 12px; color: white;
-      letter-spacing: -0.5px; flex-shrink: 0;
-      box-shadow: 0 2px 12px rgba(99, 102, 241, 0.3);
-    }
-    h1 { font-size: 18px; font-weight: 700; letter-spacing: -0.3px; }
-    .bar-sub { font-size: 12px; color: var(--text-2); margin-top: 1px; }
 
-    /* ── Badge ── */
-    .badge {
-      display: inline-flex; align-items: center; gap: 7px;
-      padding: 6px 16px; border-radius: 999px;
-      font-size: 11px; font-weight: 700;
-      letter-spacing: 0.6px; text-transform: uppercase;
-      white-space: nowrap; transition: all 0.3s ease;
+    /* Mode Pill & Quick Controls */
+    .mode-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      transition: all 0.3s ease;
+      cursor: pointer;
     }
-    .badge-dot {
-      width: 7px; height: 7px; border-radius: 50%;
-      background: currentColor; flex-shrink: 0;
+    .mode-pill.mode-live {
+      background: var(--rose-glow);
+      border: 1px solid rgba(244, 63, 94, 0.4);
+      color: var(--rose);
+      box-shadow: 0 0 16px var(--rose-glow);
     }
-    .badge-loading {
-      background: rgba(255,255,255,0.04); border: 1px solid var(--border); color: var(--text-3);
+    .mode-pill.mode-dry {
+      background: var(--emerald-glow);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: var(--emerald);
+      box-shadow: 0 0 16px var(--emerald-glow);
     }
-    .badge-dry {
-      background: var(--green-dim); border: 1px solid rgba(52, 211, 153, 0.25); color: var(--green);
-    }
-    .badge-live {
-      background: var(--red-dim); border: 1px solid rgba(251, 113, 133, 0.3); color: var(--red);
-    }
-    .badge-live .badge-dot { animation: pulse 2s ease-in-out infinite; }
-
-    /* ── Main ── */
-    main {
-      position: relative; z-index: 1;
-      max-width: 1300px; margin: 0 auto;
-      padding: 24px 28px 64px;
-      display: flex; flex-direction: column; gap: 16px;
+    .mode-pill-dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: currentColor;
     }
 
-    /* ── Metrics ── */
-    .metrics {
+    .refresh-badge {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-dim);
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      padding: 6px 12px;
+      border-radius: var(--radius-sm);
+    }
+
+    /* Content Views */
+    .content-viewport {
+      padding: 28px 32px 60px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    .tab-content {
+      display: none;
+      flex-direction: column;
+      gap: 24px;
+      animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .tab-content.active {
+      display: flex;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Hero Banner / Command Summary */
+    .command-hero {
+      background: linear-gradient(135deg, rgba(30, 27, 75, 0.5), rgba(15, 23, 42, 0.7));
+      border: 1px solid rgba(99, 102, 241, 0.25);
+      border-radius: var(--radius-xl);
+      padding: 28px 32px;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 24px;
+    }
+    .command-hero::before {
+      content: '';
+      position: absolute;
+      top: -50%; right: -10%;
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(129, 140, 248, 0.15), transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-text h2 {
+      font-size: 22px;
+      font-weight: 800;
+      margin-bottom: 6px;
+      letter-spacing: -0.5px;
+    }
+    .hero-text p {
+      color: var(--text-muted);
+      font-size: 13px;
+      max-width: 600px;
+      line-height: 1.6;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    /* Metric Grid Cards */
+    .metrics-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 14px;
-    }
-    .metric {
-      background: var(--surface);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      border: 1px solid var(--border);
-      border-radius: var(--r);
-      padding: 22px 20px;
-      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-      cursor: default;
-    }
-    .metric:hover {
-      border-color: var(--border-hover);
-      transform: translateY(-3px);
-      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
-    }
-    .metric-label {
-      display: block; font-size: 11px; font-weight: 600;
-      text-transform: uppercase; letter-spacing: 0.8px;
-      color: var(--text-3); margin-bottom: 10px;
-    }
-    .metric-val {
-      font-size: 26px; font-weight: 800; letter-spacing: -0.5px;
-      transition: color 0.3s ease;
+      gap: 18px;
     }
 
-    /* ── Cards ── */
-    .card {
-      background: var(--surface);
+    .metric-card {
+      background: var(--panel);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
       border: 1px solid var(--border);
-      border-radius: var(--r);
+      border-radius: var(--radius-lg);
+      padding: 22px;
+      position: relative;
+      transition: all 0.25s ease;
+    }
+    .metric-card:hover {
+      border-color: var(--border-hover);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+    }
+    .metric-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+    .metric-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+    .metric-icon-box {
+      width: 36px; height: 36px;
+      border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--border-subtle);
+    }
+    .metric-value {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -0.6px;
+      margin-bottom: 6px;
+    }
+    .metric-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .metric-badge {
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 700;
+      font-size: 10px;
+    }
+    .badge-positive { background: var(--emerald-glow); color: var(--emerald); }
+    .badge-neutral { background: rgba(255, 255, 255, 0.06); color: var(--text-muted); }
+
+    /* Visual Pipeline Flow Chart */
+    .pipeline-card {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
       padding: 24px;
-      transition: border-color 0.25s ease;
-      opacity: 0;
-      animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-      animation-delay: calc(var(--i, 0) * 55ms);
     }
-    .card:hover { border-color: var(--border-hover); }
-
-    .two-col {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+    .card-title-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 20px;
     }
-    .card-head {
-      display: flex; align-items: center; justify-content: space-between;
-      flex-wrap: wrap; gap: 12px; margin-bottom: 18px;
+    .card-title-bar h3 {
+      font-size: 15px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
     }
-    .card-head h2 { margin-bottom: 0; }
-
-    h2 {
-      font-size: 14px; font-weight: 700; letter-spacing: -0.1px;
-      display: flex; align-items: center; gap: 10px;
-      margin-bottom: 18px; text-transform: uppercase;
-      letter-spacing: 0.4px; color: var(--text-2);
-    }
-    .h2-bar {
-      width: 3px; height: 15px; border-radius: 2px;
-      background: linear-gradient(180deg, var(--accent), #a78bfa);
-      flex-shrink: 0;
+    .title-accent {
+      width: 4px; height: 16px;
+      background: linear-gradient(180deg, var(--accent), var(--cyan));
+      border-radius: 2px;
     }
 
-    /* ── Definition Lists ── */
-    dl {
-      display: grid; grid-template-columns: 155px 1fr;
-      gap: 11px 18px; font-size: 13px;
+    .pipeline-steps {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      position: relative;
     }
-    dt { color: var(--text-3); font-weight: 500; }
-    dd { color: var(--text); overflow-wrap: anywhere; }
-    .missing { color: var(--red); font-weight: 500; font-size: 12px; }
-
-    code {
-      padding: 3px 9px; border-radius: 7px;
-      background: rgba(129, 140, 248, 0.07);
-      border: 1px solid rgba(129, 140, 248, 0.1);
-      color: #c4c9f2; font-size: 12px;
-      font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', 'JetBrains Mono', monospace;
+    .pipeline-step {
+      background: rgba(10, 13, 20, 0.6);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      position: relative;
+      transition: all 0.2s ease;
+    }
+    .pipeline-step:hover {
+      border-color: var(--accent-glow);
+      background: rgba(15, 19, 29, 0.9);
+    }
+    .step-num {
+      font-size: 10px;
+      font-weight: 800;
+      color: var(--accent-light);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .step-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .step-detail {
+      font-size: 11px;
+      color: var(--text-dim);
     }
 
-    /* ── Buttons ── */
-    .btn-group { display: flex; gap: 8px; flex-wrap: wrap; }
+    /* Grid Layout for Panels */
+    .panel-grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
 
+    .glass-card {
+      background: var(--panel);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    /* Data Tables */
+    .table-container {
+      width: 100%;
+      overflow-x: auto;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-subtle);
+    }
+
+    table.data-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13px;
+    }
+    table.data-table th {
+      background: rgba(10, 13, 20, 0.8);
+      padding: 12px 16px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      border-bottom: 1px solid var(--border);
+    }
+    table.data-table td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border-subtle);
+      color: var(--text-muted);
+      vertical-align: middle;
+    }
+    table.data-table tbody tr {
+      transition: background 0.15s ease;
+    }
+    table.data-table tbody tr:hover {
+      background: rgba(255, 255, 255, 0.02);
+      color: var(--text);
+    }
+
+    .status-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: capitalize;
+    }
+    .chip-candidate, .chip-claimed {
+      background: var(--emerald-glow);
+      color: var(--emerald);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+    .chip-error, .chip-race_lost {
+      background: var(--rose-glow);
+      color: var(--rose);
+      border: 1px solid rgba(244, 63, 94, 0.3);
+    }
+    .chip-ignored {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text-dim);
+      border: 1px solid var(--border-subtle);
+    }
+
+    code.code-pill {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: var(--radius-sm);
+      background: rgba(99, 102, 241, 0.1);
+      color: var(--accent-light);
+      border: 1px solid rgba(99, 102, 241, 0.2);
+    }
+
+    /* Buttons */
     .btn {
-      display: inline-flex; align-items: center; justify-content: center;
-      gap: 7px; min-height: 40px; padding: 9px 20px;
-      border-radius: 10px; font-family: inherit;
-      font-size: 13px; font-weight: 600; cursor: pointer;
-      border: none; white-space: nowrap;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      height: 42px;
+      padding: 0 20px;
+      border-radius: var(--radius-md);
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      border: 1px solid transparent;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      white-space: nowrap;
+      text-decoration: none;
     }
+    .btn svg { width: 16px; height: 16px; stroke-width: 2.2; }
+
     .btn-primary {
-      background: linear-gradient(135deg, #6366f1, #818cf8);
-      color: white;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.12);
+      background: linear-gradient(135deg, var(--accent), #4f46e5);
+      color: #fff;
+      box-shadow: 0 4px 16px var(--accent-glow);
     }
     .btn-primary:hover:not(:disabled) {
       transform: translateY(-1px);
-      box-shadow: 0 6px 24px rgba(99, 102, 241, 0.35), inset 0 1px 0 rgba(255,255,255,0.15);
+      box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
+      background: linear-gradient(135deg, #6d28d9, var(--accent));
     }
     .btn-primary:active:not(:disabled) { transform: translateY(0); }
 
     .btn-secondary {
-      background: rgba(255,255,255,0.04);
-      color: var(--text); border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text);
+      border-color: var(--border);
     }
     .btn-secondary:hover:not(:disabled) {
-      background: rgba(255,255,255,0.07);
+      background: rgba(255, 255, 255, 0.08);
       border-color: var(--border-hover);
     }
 
-    .btn-ghost {
-      background: transparent; color: var(--text-2);
-      border: 1px solid transparent;
+    .btn-danger {
+      background: var(--rose-glow);
+      color: var(--rose);
+      border-color: rgba(244, 63, 94, 0.3);
     }
-    .btn-ghost:hover:not(:disabled) {
-      color: var(--text); background: rgba(255,255,255,0.04);
+    .btn-danger:hover:not(:disabled) {
+      background: rgba(244, 63, 94, 0.3);
     }
 
     .btn:disabled {
-      opacity: 0.4; cursor: not-allowed;
-      transform: none !important;
+      opacity: 0.4;
+      cursor: not-allowed;
     }
 
-    /* ── Form ── */
-    label {
-      display: flex; flex-direction: column; gap: 7px;
-      font-size: 12px; font-weight: 500; color: var(--text-2);
+    /* Forms & Settings Inputs */
+    .form-grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
     }
-    input, select, textarea {
-      width: 100%; min-height: 42px; padding: 10px 13px;
-      border: 1px solid var(--border); border-radius: 10px;
-      background: var(--surface-input); color: var(--text);
-      font-family: inherit; font-size: 13px;
-      transition: all 0.2s ease; outline: none;
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
     }
-    input:hover, select:hover, textarea:hover { border-color: var(--border-hover); }
-    input:focus, select:focus, textarea:focus {
+    .form-group.full-width { grid-column: 1 / -1; }
+
+    label.field-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    label.field-label span.field-hint {
+      font-size: 11px;
+      font-weight: 500;
+      color: var(--text-dim);
+    }
+
+    input.form-control, select.form-control, textarea.form-control {
+      width: 100%;
+      height: 44px;
+      padding: 0 14px;
+      border-radius: var(--radius-md);
+      background: var(--input-bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 13px;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+    textarea.form-control {
+      height: 100px;
+      padding: 12px 14px;
+      resize: vertical;
+    }
+    input.form-control:hover, select.form-control:hover, textarea.form-control:hover {
+      border-color: var(--border-hover);
+    }
+    input.form-control:focus, select.form-control:focus, textarea.form-control:focus {
       border-color: var(--border-focus);
       box-shadow: 0 0 0 3px var(--accent-glow);
     }
-    textarea { min-height: 88px; resize: vertical; }
-    select { cursor: pointer; }
-    input::placeholder, textarea::placeholder { color: var(--text-3); }
-
-    .settings-grid {
-      display: grid; grid-template-columns: repeat(3, 1fr);
-      gap: 16px; margin-bottom: 18px;
-    }
-    .span-full { grid-column: 1 / -1; }
-    .settings-actions { display: flex; gap: 10px; margin-bottom: 16px; }
-
-    .test-form {
-      display: grid; grid-template-columns: 1fr 1fr auto;
-      gap: 16px; align-items: end; margin-bottom: 16px;
+    select.form-control {
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2794a3b8%27' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
     }
 
-    /* ── Tables ── */
-    .table-wrap { overflow-x: auto; }
-
-    table { width: 100%; border-collapse: collapse; }
-    th, td {
-      padding: 12px 14px; text-align: left;
-      font-size: 13px; border-bottom: 1px solid var(--border);
-      vertical-align: top;
+    /* iOS Toggle Switch */
+    .toggle-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
     }
-    th {
-      color: var(--text-3); font-size: 10px; font-weight: 700;
-      text-transform: uppercase; letter-spacing: 0.6px;
+    .toggle-switch {
+      width: 44px; height: 24px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 999px;
+      position: relative;
+      transition: background 0.25s ease;
+      border: 1px solid var(--border);
     }
-    tbody tr { transition: background 0.15s ease; }
-    tbody tr:hover { background: rgba(255, 255, 255, 0.015); }
-    tbody tr:last-child td { border-bottom: none; }
-    .empty-row { color: var(--text-3); font-style: italic; padding: 20px 14px; }
+    .toggle-switch::after {
+      content: '';
+      position: absolute;
+      top: 2px; left: 2px;
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      background: #fff;
+      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+    }
+    input[type="checkbox"]:checked + .toggle-switch {
+      background: var(--accent);
+      border-color: var(--accent-light);
+    }
+    input[type="checkbox"]:checked + .toggle-switch::after {
+      transform: translateX(20px);
+    }
+    input[type="checkbox"] { display: none; }
 
-    .s-candidate, .s-claimed { color: var(--green); font-weight: 600; }
-    .s-error, .s-race_lost { color: var(--red); font-weight: 600; }
-    .s-ignored { color: var(--text-3); }
-
-    /* ── Output / Pre ── */
-    .output {
-      margin-top: 14px; padding: 16px 18px;
-      border: 1px solid var(--border); border-radius: 12px;
-      background: rgba(4, 5, 10, 0.5); color: var(--text-2);
-      font-family: 'SF Mono', 'Cascadia Code', 'Fira Code', monospace;
-      font-size: 12px; line-height: 1.7;
-      overflow: auto; white-space: pre-wrap; max-height: 300px;
+    /* Code Terminal Display */
+    .terminal-box {
+      background: #05070a;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: #cbd5e1;
+      line-height: 1.6;
+      max-height: 280px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-all;
     }
 
-    /* ── Error Box ── */
-    .error-box {
-      padding: 14px 18px; border-radius: 12px; font-size: 13px;
-      background: rgba(6, 7, 12, 0.35); border: 1px solid var(--border);
-      color: var(--text-2); transition: all 0.35s ease;
-    }
-    .error-box.has-error {
-      background: var(--red-dim);
-      border-color: rgba(251, 113, 133, 0.2);
-      color: var(--red);
-    }
-
-    /* ── Toast ── */
+    /* Toast Container */
     #toast-container {
-      position: fixed; bottom: 24px; right: 24px;
-      display: flex; flex-direction: column-reverse; gap: 10px;
-      z-index: 9999; pointer-events: none;
+      position: fixed;
+      bottom: 28px;
+      right: 28px;
+      display: flex;
+      flex-direction: column-reverse;
+      gap: 10px;
+      z-index: 9999;
+      pointer-events: none;
     }
     .toast {
-      padding: 13px 22px; border-radius: 12px;
-      font-size: 13px; font-weight: 500;
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
-      transform: translateX(24px); opacity: 0;
-      transition: all 0.45s cubic-bezier(0.16, 1, 0.3, 1);
-      pointer-events: auto; max-width: 420px;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      padding: 14px 20px;
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      font-weight: 600;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      transform: translateX(30px);
+      opacity: 0;
+      transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+      pointer-events: auto;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     }
     .toast.show { transform: translateX(0); opacity: 1; }
-    .toast-success { background: rgba(52,211,153,0.12); border: 1px solid rgba(52,211,153,0.2); color: var(--green); }
-    .toast-error { background: rgba(251,113,133,0.12); border: 1px solid rgba(251,113,133,0.2); color: var(--red); }
-    .toast-info { background: rgba(129,140,248,0.12); border: 1px solid rgba(129,140,248,0.2); color: var(--accent); }
+    .toast-success { background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); color: var(--emerald); }
+    .toast-error { background: rgba(244, 63, 94, 0.15); border: 1px solid rgba(244, 63, 94, 0.3); color: var(--rose); }
+    .toast-info { background: rgba(99, 102, 241, 0.15); border: 1px solid rgba(99, 102, 241, 0.3); color: var(--accent-light); }
 
-    /* ── Footer ── */
-    footer {
-      position: relative; z-index: 1;
-      max-width: 1300px; margin: 0 auto;
-      padding: 0 28px 36px;
-      display: flex; justify-content: space-between;
-      font-size: 11px; color: var(--text-3);
+    /* Key/Value Info List */
+    .info-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
     }
+    .info-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-subtle);
+      font-size: 13px;
+    }
+    .info-label { color: var(--text-dim); font-weight: 500; }
+    .info-val { color: var(--text); font-weight: 600; text-align: right; }
 
-    /* ── Animations ── */
-    @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(20px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-    @keyframes pulse {
-      0%, 100% { opacity: 1; transform: scale(1); }
-      50%      { opacity: 0.4; transform: scale(0.75); }
-    }
-    @keyframes drift {
-      0%, 100% { transform: translate(0, 0); }
-      33%      { transform: translate(35px, -25px); }
-      66%      { transform: translate(-25px, 18px); }
-    }
-
-    /* ── Scrollbar ── */
-    ::-webkit-scrollbar { width: 5px; height: 5px; }
-    ::-webkit-scrollbar-track { background: transparent; }
-    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.07); border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.14); }
-
-    /* ── Responsive ── */
-    @media (max-width: 820px) {
-      .bar { padding: 12px 18px; flex-direction: column; align-items: flex-start; }
-      main { padding: 16px 18px 48px; }
-      .metrics { grid-template-columns: 1fr 1fr; }
-      .two-col { grid-template-columns: 1fr; }
-      .settings-grid { grid-template-columns: 1fr; }
-      .span-full { grid-column: span 1; }
-      .test-form { grid-template-columns: 1fr; }
-      dl { grid-template-columns: 125px 1fr; }
-      footer { flex-direction: column; gap: 4px; padding-bottom: 28px; }
-    }
-    @media (max-width: 480px) {
-      .metrics { grid-template-columns: 1fr; }
+    /* Responsive */
+    @media (max-width: 1024px) {
+      aside.sidebar { transform: translateX(-100%); }
+      aside.sidebar.mobile-open { transform: translateX(0); }
+      main.main-content { margin-left: 0; }
+      .metrics-grid { grid-template-columns: repeat(2, 1fr); }
+      .pipeline-steps { grid-template-columns: 1fr; }
+      .panel-grid-2 { grid-template-columns: 1fr; }
+      .form-grid-3 { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
+  <div class="ambient-bg"></div>
   <div id="toast-container"></div>
-  <div class="bg-glow" aria-hidden="true"></div>
 
-  <header>
-    <div class="header-gradient"></div>
-    <div class="bar">
-      <div class="bar-left">
-        <div class="logo">B24</div>
+  <div class="app-container">
+    
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-logo">AV</div>
         <div>
-          <h1>Bitrix24 Bot</h1>
-          <div class="bar-sub">Centro de control &middot; Automatización de ventas</div>
+          <div class="brand-title">AgentVentas AI</div>
+          <div class="brand-sub">Bitrix24 Bot OS</div>
         </div>
       </div>
-      <div id="mode" class="badge badge-loading">
-        <span class="badge-dot"></span>
-        <span>Cargando</span>
-      </div>
-    </div>
-  </header>
 
-  <main>
+      <nav class="nav-menu">
+        <div class="nav-section-title">Control Principal</div>
+        <a class="nav-item active" data-tab="tab-overview">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+          Command Center
+        </a>
+        <a class="nav-item" data-tab="tab-monitor">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          Live Pipeline Tracker
+        </a>
+        
+        <div class="nav-section-title">Configuración & Reglas</div>
+        <a class="nav-item" data-tab="tab-settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+          Reglas de Automatización
+        </a>
 
-    <!-- ── Metrics ── -->
-    <div class="metrics">
-      <div class="metric card" style="--i:0">
-        <span class="metric-label">Worker</span>
-        <strong class="metric-val" id="scanner-running">&mdash;</strong>
-      </div>
-      <div class="metric card" style="--i:1">
-        <span class="metric-label">Estado</span>
-        <strong class="metric-val" id="scanner-state">&mdash;</strong>
-      </div>
-      <div class="metric card" style="--i:2">
-        <span class="metric-label">Intervalo</span>
-        <strong class="metric-val" id="scanner-interval">&mdash;</strong>
-      </div>
-      <div class="metric card" style="--i:3">
-        <span class="metric-label">Candidatos</span>
-        <strong class="metric-val" id="scanner-candidates">&mdash;</strong>
-      </div>
-    </div>
+        <div class="nav-section-title">Diagnóstico</div>
+        <a class="nav-item" data-tab="tab-sandbox">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m8 3 4 8 5-5 5 15H2L8 3z"/></svg>
+          Testbed / Sandbox
+        </a>
+        <a class="nav-item" data-tab="tab-system">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          System Health & Logs
+        </a>
+      </nav>
 
-    <!-- ── Config + Service ── -->
-    <div class="two-col">
-      <div class="card" style="--i:4">
-        <h2><span class="h2-bar"></span> Configuración</h2>
-        <dl id="status"></dl>
-      </div>
-      <div class="card" style="--i:5">
-        <h2><span class="h2-bar"></span> Servicio</h2>
-        <dl id="urls"></dl>
-      </div>
-    </div>
-
-    <!-- ── Scanner ── -->
-    <div class="card" style="--i:6">
-      <div class="card-head">
-        <h2><span class="h2-bar"></span> Scanner Automático</h2>
-        <div class="btn-group">
-          <button id="scan-now" class="btn btn-primary" type="button">&#9889; Escanear ahora</button>
-          <button id="pause-scanner" class="btn btn-secondary" type="button">&#9208; Pausar</button>
-          <button id="resume-scanner" class="btn btn-secondary" type="button">&#9654; Reanudar</button>
+      <div class="sidebar-footer">
+        <div class="bot-engine-card">
+          <div class="engine-pulse" id="engine-pulse-dot"></div>
+          <div class="engine-info">
+            <div class="engine-title" id="engine-status-text">Motor Activo</div>
+            <div class="engine-sub" id="engine-sub-text">Scanner cada 5s</div>
+          </div>
         </div>
       </div>
-      <div class="error-box" id="scanner-error">Sin errores recientes.</div>
-    </div>
+    </aside>
 
-    <!-- ── Current Candidates ── -->
-    <div class="card" style="--i:7">
-      <h2><span class="h2-bar"></span> Candidatos Actuales</h2>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr><th>Detectado</th><th>Deal</th><th>Chat</th><th>Motivo</th><th>Acciones en live</th></tr>
-          </thead>
-          <tbody id="current-candidates"></tbody>
-        </table>
+    <!-- Main Content Area -->
+    <main class="main-content">
+      
+      <!-- Topbar Header -->
+      <header class="topbar">
+        <div class="topbar-left">
+          <div class="page-heading">
+            <div class="page-title" id="current-tab-title">Command Center</div>
+            <div class="page-breadcrumb">AgentVentas OS &rsaquo; Real-time Bitrix24 Bot</div>
+          </div>
+        </div>
+
+        <div class="topbar-right">
+          <div class="refresh-badge">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/></svg>
+            Auto-sync: 4s
+          </div>
+
+          <div id="mode-badge" class="mode-pill mode-dry">
+            <span class="mode-pill-dot"></span>
+            <span id="mode-text">DRY RUN</span>
+          </div>
+        </div>
+      </header>
+
+      <div class="content-viewport">
+        
+        <!-- ================= TAB 1: COMMAND CENTER ================= -->
+        <div id="tab-overview" class="tab-content active">
+          
+          <!-- Hero Section -->
+          <div class="command-hero">
+            <div class="hero-text">
+              <h2>Centro de Comando de Ventas Bitrix24</h2>
+              <p>Bot de captura instantánea, asignación de asesores y auto-respuesta a prospectos en OpenLines Bitrix24.</p>
+            </div>
+            <div class="hero-actions">
+              <button id="hero-scan-btn" class="btn btn-primary">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                Escanear Ahora
+              </button>
+              <button id="hero-toggle-btn" class="btn btn-secondary">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 8h6"/><path d="M9 12h6"/><path d="M9 16h6"/></svg>
+                Pausar Engine
+              </button>
+            </div>
+          </div>
+
+          <!-- Metrics Cards -->
+          <div class="metrics-grid">
+            <div class="metric-card">
+              <div class="metric-header">
+                <span class="metric-label">Estado de Scanner</span>
+                <div class="metric-icon-box">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--emerald)" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                </div>
+              </div>
+              <div class="metric-value" id="kpi-scanner-state">&mdash;</div>
+              <div class="metric-sub">
+                <span class="metric-badge badge-positive" id="kpi-scanner-interval">5s</span>
+                <span>frecuencia de monitoreo</span>
+              </div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-header">
+                <span class="metric-label">Candidatos Activos</span>
+                <div class="metric-icon-box">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent-light)" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                </div>
+              </div>
+              <div class="metric-value" id="kpi-candidates-count">&mdash;</div>
+              <div class="metric-sub">
+                <span class="metric-badge badge-neutral">Leads</span>
+                <span>listos para auto-asignación</span>
+              </div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-header">
+                <span class="metric-label">Asignación Directa</span>
+                <div class="metric-icon-box">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--cyan)" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><polyline points="16 11 18 13 22 9"/></svg>
+                </div>
+              </div>
+              <div class="metric-value" id="kpi-operator-id">&mdash;</div>
+              <div class="metric-sub">
+                <span>ID Operador Bitrix receptor</span>
+              </div>
+            </div>
+
+            <div class="metric-card">
+              <div class="metric-header">
+                <span class="metric-label">Etapa Destino CRM</span>
+                <div class="metric-icon-box">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--purple)" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                </div>
+              </div>
+              <div class="metric-value" id="kpi-target-stage">&mdash;</div>
+              <div class="metric-sub">
+                <span>Fase de avance automático</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Flow Chart Visualizer -->
+          <div class="pipeline-card">
+            <div class="card-title-bar">
+              <h3><span class="title-accent"></span> Flujo de Automatización En Vivo</h3>
+              <span class="refresh-badge">Proceso Autónomo End-to-End</span>
+            </div>
+
+            <div class="pipeline-steps">
+              <div class="pipeline-step">
+                <span class="step-num">Paso 01</span>
+                <span class="step-name">Webhook Bitrix</span>
+                <span class="step-detail">Detección evento chat/deal en etapa origen</span>
+              </div>
+              <div class="pipeline-step">
+                <span class="step-num">Paso 02</span>
+                <span class="step-name">Filtro de Conector</span>
+                <span class="step-detail">Validación de OpenLine asignado</span>
+              </div>
+              <div class="pipeline-step">
+                <span class="step-num">Paso 03</span>
+                <span class="step-name">Auto-Claim Lead</span>
+                <span class="step-detail">Asignación inmediata de operador</span>
+              </div>
+              <div class="pipeline-step">
+                <span class="step-num">Paso 04</span>
+                <span class="step-name">Transición CRM</span>
+                <span class="step-detail">Movimiento a etapa de seguimiento</span>
+              </div>
+              <div class="pipeline-step">
+                <span class="step-num">Paso 05</span>
+                <span class="step-name">Mensaje Inicial</span>
+                <span class="step-detail">Envío de respuesta de bienvenida</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Split Table Cards -->
+          <div class="panel-grid-2">
+            <!-- Current Candidates -->
+            <div class="glass-card">
+              <div class="card-title-bar">
+                <h3><span class="title-accent"></span> Candidatos Detectados</h3>
+                <span class="metric-badge badge-positive" id="cur-cand-badge">0 Activos</span>
+              </div>
+
+              <div class="table-container">
+                <table class="data-table">
+                  <thead>
+                    <tr><th>Hora</th><th>Deal</th><th>Chat</th><th>Motivo</th></tr>
+                  </thead>
+                  <tbody id="overview-current-body">
+                    <tr><td colspan="4" style="text-align:center; padding: 24px; color: var(--text-dim);">Sin candidatos pendientes</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Recent Execution History -->
+            <div class="glass-card">
+              <div class="card-title-bar">
+                <h3><span class="title-accent"></span> Últimas Acciones</h3>
+                <span class="refresh-badge">Historial</span>
+              </div>
+
+              <div class="table-container">
+                <table class="data-table">
+                  <thead>
+                    <tr><th>Hora</th><th>Estado</th><th>Deal</th><th>Acción</th></tr>
+                  </thead>
+                  <tbody id="overview-recent-body">
+                    <tr><td colspan="4" style="text-align:center; padding: 24px; color: var(--text-dim);">Sin acciones registradas aún</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+
+        <!-- ================= TAB 2: LIVE MONITOR ================= -->
+        <div id="tab-monitor" class="tab-content">
+          <div class="glass-card">
+            <div class="card-title-bar">
+              <h3><span class="title-accent"></span> Monitor Completo de Interacciones</h3>
+              <div style="display:flex; gap:12px;">
+                <input id="table-search" class="form-control" style="width:240px; height:38px;" placeholder="🔍 Buscar por Deal ID o Chat ID...">
+                <button id="monitor-refresh-btn" class="btn btn-secondary" style="height:38px;">Actualizar Log</button>
+              </div>
+            </div>
+
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Timestamp</th>
+                    <th>Estado</th>
+                    <th>Deal ID</th>
+                    <th>Chat ID</th>
+                    <th>Diagnóstico / Motivo</th>
+                    <th>Acciones Ejecutadas</th>
+                  </tr>
+                </thead>
+                <tbody id="full-history-body">
+                  <tr><td colspan="6" style="text-align:center; padding: 32px; color: var(--text-dim);">Cargando registros...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+
+        <!-- ================= TAB 3: SETTINGS & RULES ================= -->
+        <div id="tab-settings" class="tab-content">
+          
+          <div class="glass-card">
+            <div class="card-title-bar">
+              <h3><span class="title-accent"></span> Parámetros de Automatización En Vivo</h3>
+              <div style="display:flex; gap:10px;">
+                <button id="save-settings-btn" class="btn btn-primary">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                  Guardar Configuración
+                </button>
+                <button id="reset-settings-btn" class="btn btn-danger">Limpiar Overrides</button>
+              </div>
+            </div>
+
+            <div class="form-grid-3">
+              <div class="form-group">
+                <label class="field-label">Modo de Operación</label>
+                <select id="cfg-mode" class="form-control">
+                  <option value="dry_run">dry_run (Simulación segura)</option>
+                  <option value="live">live (Ejecución real en Bitrix24)</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="field-label">Etapa Origen (Asignación)</label>
+                <input id="cfg-assignment-stage" class="form-control" placeholder="Ej: C16:UC_GIKKS8">
+              </div>
+
+              <div class="form-group">
+                <label class="field-label">Etapa Destino (Post-Claim)</label>
+                <input id="cfg-target-stage" class="form-control" placeholder="Ej: C16:UC_L8W7U1">
+              </div>
+
+              <div class="form-group">
+                <label class="field-label">ID de Categoría CRM</label>
+                <input id="cfg-category-id" class="form-control" placeholder="16">
+              </div>
+
+              <div class="form-group">
+                <label class="field-label">ID Operador / Asesor</label>
+                <input id="cfg-operator-id" class="form-control" placeholder="2381716">
+              </div>
+
+              <div class="form-group">
+                <label class="field-label">Intervalo de Scanner (seg)</label>
+                <input id="cfg-interval" class="form-control" type="number" placeholder="5">
+              </div>
+
+              <div class="form-group">
+                <label class="field-label">Límite por Vuelta</label>
+                <input id="cfg-limit" class="form-control" type="number" placeholder="8">
+              </div>
+
+              <div class="form-group">
+                <label class="field-label">Scanner Background Habilitado</label>
+                <select id="cfg-scan-enabled" class="form-control">
+                  <option value="true">True (Escaneo activo)</option>
+                  <option value="false">False (Desactivado)</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="field-label">Conectores Permitidos</label>
+                <input id="cfg-connectors" class="form-control" placeholder="opcional">
+              </div>
+
+              <div class="form-group full-width">
+                <label class="field-label">URL Webhook Bitrix24</label>
+                <input id="cfg-webhook" class="form-control" placeholder="https://tu-dominio.bitrix24.es/rest/1/xxxxxxxx/">
+              </div>
+
+              <div class="form-group full-width">
+                <label class="field-label">Mensaje Automático de Bienvenida</label>
+                <textarea id="cfg-greeting" class="form-control" placeholder="Escribe el mensaje que se enviará automáticamente al prospecto..."></textarea>
+              </div>
+            </div>
+
+            <div style="margin-top:16px;">
+              <label class="field-label" style="margin-bottom:8px;">Respuesta del Servidor / Override Output</label>
+              <div id="settings-console" class="terminal-box">Los cambios realizados aquí son inmediatos en memoria. Para hacerlos permanentes tras reinicios o redeploys en Render, agrégalos a las variables de entorno de tu servidor.</div>
+            </div>
+          </div>
+        </div>
+
+
+        <!-- ================= TAB 4: SANDBOX & TESTBED ================= -->
+        <div id="tab-sandbox" class="tab-content">
+          <div class="glass-card">
+            <div class="card-title-bar">
+              <h3><span class="title-accent"></span> Simulador & Diagnostic Testbed</h3>
+              <span class="refresh-badge">Ejecución en Dry-Run</span>
+            </div>
+
+            <p style="font-size:13px; color:var(--text-muted);">Prueba el algoritmo de calificación y asignación con un Deal o Chat ID específico sin alterar tus datos de producción.</p>
+
+            <form id="sandbox-form" style="display:grid; grid-template-columns: 1fr 1fr auto; gap: 16px; align-items: end;">
+              <div class="form-group">
+                <label class="field-label">Bitrix Deal ID</label>
+                <input id="sb-deal-id" class="form-control" placeholder="Ej: 2804388">
+              </div>
+              <div class="form-group">
+                <label class="field-label">Bitrix Chat ID</label>
+                <input id="sb-chat-id" class="form-control" placeholder="Ej: 2758584">
+              </div>
+              <button id="sb-test-btn" type="submit" class="btn btn-primary">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                Ejecutar Test
+              </button>
+            </form>
+
+            <div style="margin-top:16px;">
+              <label class="field-label" style="margin-bottom:8px;">Resultado del Diagnóstico</label>
+              <div id="sandbox-output" class="terminal-box">Esperando datos de simulación...</div>
+            </div>
+          </div>
+        </div>
+
+
+        <!-- ================= TAB 5: SYSTEM HEALTH ================= -->
+        <div id="tab-system" class="tab-content">
+          <div class="panel-grid-2">
+            <div class="glass-card">
+              <div class="card-title-bar">
+                <h3><span class="title-accent"></span> Endpoints del Sistema</h3>
+              </div>
+              <div class="info-list" id="system-endpoints-list">
+                <div class="info-item"><span class="info-label">Cargando...</span></div>
+              </div>
+            </div>
+
+            <div class="glass-card">
+              <div class="card-title-bar">
+                <h3><span class="title-accent"></span> Estado de Seguridad</h3>
+              </div>
+              <div class="info-list" id="system-security-list">
+                <div class="info-item"><span class="info-label">Cargando...</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </div>
-    </div>
-
-    <!-- ── History ── -->
-    <div class="card" style="--i:8">
-      <h2><span class="h2-bar"></span> Historial Reciente</h2>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr><th>Hora</th><th>Estado</th><th>Deal</th><th>Chat</th><th>Motivo</th><th>Acciones</th></tr>
-          </thead>
-          <tbody id="recent-results"></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- ── Settings ── -->
-    <div class="card" style="--i:9">
-      <h2><span class="h2-bar"></span> Configuración En Vivo</h2>
-      <div class="settings-grid">
-        <label>Modo
-          <select id="setting-mode">
-            <option value="dry_run">dry_run</option>
-            <option value="live">live</option>
-          </select>
-        </label>
-        <label>Etapa ASIGNACIÓN
-          <input id="setting-assignment-stage" placeholder="C16:UC_GIKKS8">
-        </label>
-        <label>Etapa ASIGNADO
-          <input id="setting-target-stage" placeholder="C16:UC_L8W7U1">
-        </label>
-        <label>Categoría
-          <input id="setting-category" inputmode="numeric" placeholder="16">
-        </label>
-        <label>Operador
-          <input id="setting-operator" inputmode="numeric" placeholder="2381716">
-        </label>
-        <label>Intervalo scanner
-          <input id="setting-interval" inputmode="decimal" placeholder="5">
-        </label>
-        <label>Límite por vuelta
-          <input id="setting-limit" inputmode="numeric" placeholder="8">
-        </label>
-        <label>Scanner activo
-          <select id="setting-scan-enabled">
-            <option value="true">true</option>
-            <option value="false">false</option>
-          </select>
-        </label>
-        <label>Conectores permitidos
-          <input id="setting-connectors" placeholder="opcional">
-        </label>
-        <label class="span-full">Webhook Bitrix
-          <input id="setting-webhook" placeholder="Pega la URL completa solo si deseas cambiarla">
-        </label>
-        <label class="span-full">Mensaje automático
-          <textarea id="setting-message"></textarea>
-        </label>
-      </div>
-      <div class="settings-actions">
-        <button id="save-settings" class="btn btn-primary" type="button">Guardar cambios</button>
-        <button id="clear-settings" class="btn btn-ghost" type="button">Limpiar overrides</button>
-      </div>
-      <pre id="settings-output" class="output">Los cambios son inmediatos. Para hacerlos permanentes, cópialos a las Environment Variables de Render.</pre>
-    </div>
-
-    <!-- ── Manual Test ── -->
-    <div class="card" style="--i:10">
-      <h2><span class="h2-bar"></span> Prueba Manual</h2>
-      <form id="check-form" class="test-form">
-        <label>Deal ID
-          <input id="deal-id" inputmode="numeric" placeholder="2804388">
-        </label>
-        <label>Chat ID
-          <input id="chat-id" inputmode="numeric" placeholder="2758584">
-        </label>
-        <button id="check-button" class="btn btn-primary" type="submit">&#128300; Probar</button>
-      </form>
-      <pre id="check-output" class="output">La prueba manual siempre corre en modo dry-run.</pre>
-    </div>
-
-  </main>
-
-  <footer>
-    <span>Bitrix24 Bot v0.2.0</span>
-    <span>Auto-actualización cada 4s</span>
-  </footer>
+    </main>
+  </div>
 
   <script>
     const params = new URLSearchParams(location.search);
@@ -574,249 +1272,320 @@
     const headers = token ? {'x-dashboard-token': token} : {};
 
     const $ = (s) => document.querySelector(s);
+    const $$ = (s) => document.querySelectorAll(s);
 
-    function row(key, val) {
-      return '<dt>' + key + '</dt><dd>' + (val || "<span class='missing'>\u2014</span>") + '</dd>';
-    }
-    function fmt(v) { return v === null || v === undefined || v === '' ? '\u2014' : v; }
+    function fmt(v) { return v === null || v === undefined || v === '' ? '—' : v; }
     function fmtTime(v) {
-      if (!v) return '\u2014';
+      if (!v) return '—';
       try { return new Date(v).toLocaleTimeString(); } catch(e) { return v; }
     }
 
-    function toast(msg, type) {
-      type = type || 'info';
-      var el = document.createElement('div');
-      el.className = 'toast toast-' + type;
-      el.textContent = msg;
+    function toast(msg, type = 'info') {
+      const el = document.createElement('div');
+      el.className = `toast toast-${type}`;
+      el.innerHTML = `<span>${msg}</span>`;
       $('#toast-container').appendChild(el);
-      requestAnimationFrame(function() {
-        requestAnimationFrame(function() { el.classList.add('show'); });
-      });
-      setTimeout(function() {
+      requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('show')));
+      setTimeout(() => {
         el.classList.remove('show');
-        el.addEventListener('transitionend', function() { el.remove(); });
-      }, 3800);
+        el.addEventListener('transitionend', () => el.remove());
+      }, 3600);
     }
 
-    /* ── Load Status ── */
+    /* ── Tab Navigation System ── */
+    const tabTitles = {
+      'tab-overview': 'Command Center',
+      'tab-monitor': 'Live Pipeline Tracker',
+      'tab-settings': 'Reglas de Automatización',
+      'tab-sandbox': 'Testbed / Sandbox',
+      'tab-system': 'System Health & Logs'
+    };
+
+    $$('.nav-item').forEach(item => {
+      item.addEventListener('click', () => {
+        const targetTab = item.getAttribute('data-tab');
+        if (!targetTab) return;
+
+        $$('.nav-item').forEach(n => n.classList.remove('active'));
+        item.classList.add('active');
+
+        $$('.tab-content').forEach(tc => tc.classList.remove('active'));
+        $(`#${targetTab}`).classList.add('active');
+
+        $('#current-tab-title').textContent = tabTitles[targetTab] || 'Dashboard';
+      });
+    });
+
+    /* ── Status Loader ── */
     async function loadStatus() {
       try {
-        var res = await fetch('/api/bitrix/status', {headers: headers});
-        if (!res.ok) {
-          $('#mode').innerHTML = '<span class="badge-dot"></span><span>Sin acceso</span>';
-          $('#mode').className = 'badge badge-loading';
-          return;
-        }
-        var d = await res.json();
-        var mode = $('#mode');
+        const res = await fetch('/api/bitrix/status', { headers });
+        if (!res.ok) return;
+        const d = await res.json();
+
+        // Mode Pill
+        const modeBadge = $('#mode-badge');
+        const modeText = $('#mode-text');
         if (d.is_live) {
-          mode.innerHTML = '<span class="badge-dot"></span><span>LIVE</span>';
-          mode.className = 'badge badge-live';
+          modeBadge.className = 'mode-pill mode-live';
+          modeText.textContent = 'LIVE MODE';
         } else {
-          mode.innerHTML = '<span class="badge-dot"></span><span>DRY RUN</span>';
-          mode.className = 'badge badge-dry';
+          modeBadge.className = 'mode-pill mode-dry';
+          modeText.textContent = 'DRY RUN';
         }
 
-        $('#status').innerHTML = [
-          row('Modo', '<code>' + d.mode + '</code>'),
-          row('Webhook', d.webhook_configured ? '<code>' + d.webhook_preview + '</code>' : ''),
-          row('ASIGNACI\u00d3N', d.assignment_stage_id ? '<code>' + d.assignment_stage_id + '</code>' : ''),
-          row('Categor\u00eda', d.category_id != null ? d.category_id : ''),
-          row('Operador', d.operator_user_id != null ? d.operator_user_id : ''),
-          row('Etapa destino', d.target_stage_id ? '<code>' + d.target_stage_id + '</code>' : ''),
-          row('Mensaje inicial', d.greeting_enabled ? '\u2713 Configurado' : 'Sin mensaje'),
-          row('Scanner', d.scan_enabled ? 'Cada ' + d.scan_interval_seconds + 's \u00b7 l\u00edmite ' + d.scan_limit : 'Desactivado'),
-          row('Overrides', (d.runtime_overrides || []).join(', ') || 'Ninguno')
-        ].join('');
+        // KPIs
+        $('#kpi-operator-id').textContent = fmt(d.operator_user_id);
+        $('#kpi-target-stage').textContent = fmt(d.target_stage_id);
 
-        $('#urls').innerHTML = [
-          row('Health', '<code>' + d.health_url + '</code>'),
-          row('Eventos', '<code>' + d.event_url + '</code>'),
-          row('Dashboard token', d.dashboard_token_enabled ? '\ud83d\udd12 Activado' : '\u26a0 Sin proteger')
-        ].join('');
-      } catch(e) { /* silent */ }
+        // System endpoints list
+        $('#system-endpoints-list').innerHTML = `
+          <div class="info-item"><span class="info-label">Health URL</span><span class="info-val"><code class="code-pill">${d.health_url}</code></span></div>
+          <div class="info-item"><span class="info-label">Event Webhook URL</span><span class="info-val"><code class="code-pill">${d.event_url}</code></span></div>
+          <div class="info-item"><span class="info-label">Webhook Configurado</span><span class="info-val">${d.webhook_configured ? '✓ Configurado' : '❌ Falta Configurar'}</span></div>
+        `;
+
+        $('#system-security-list').innerHTML = `
+          <div class="info-item"><span class="info-label">Dashboard Token</span><span class="info-val">${d.dashboard_token_enabled ? '🔒 Protegido' : '⚠️ Sin Clave'}</span></div>
+          <div class="info-item"><span class="info-label">Overrides Activos</span><span class="info-val">${(d.runtime_overrides || []).length} campos</span></div>
+        `;
+
+      } catch(e) { console.error(e); }
     }
 
-    /* ── Scanner ── */
+    /* ── Scanner Render ── */
     function renderScanner(d) {
-      var running = $('#scanner-running');
-      running.textContent = d.task_running ? 'Activo' : 'Detenido';
-      running.style.color = d.task_running ? 'var(--green)' : 'var(--text-3)';
+      // KPIs
+      const stateEl = $('#kpi-scanner-state');
+      stateEl.textContent = d.paused ? 'Pausado' : (d.enabled ? 'Escaneando' : 'Inactivo');
+      stateEl.style.color = d.paused ? 'var(--amber)' : (d.enabled ? 'var(--emerald)' : 'var(--text-dim)');
 
-      var state = $('#scanner-state');
-      state.textContent = d.paused ? 'Pausado' : (d.enabled ? 'Escaneando' : 'Desactivado');
-      state.style.color = d.paused ? 'var(--yellow)' : (d.enabled ? 'var(--green)' : 'var(--text-3)');
+      $('#kpi-scanner-interval').textContent = `${d.interval_seconds}s`;
 
-      $('#scanner-interval').textContent = d.interval_seconds + 's';
+      const candidates = d.current_candidates || [];
+      $('#kpi-candidates-count').textContent = candidates.length;
+      $('#cur-cand-badge').textContent = `${candidates.length} Activos`;
 
-      var cc = (d.current_candidates || []).length;
-      var cands = $('#scanner-candidates');
-      cands.textContent = cc;
-      cands.style.color = cc > 0 ? 'var(--accent)' : '';
-
-      var errEl = $('#scanner-error');
-      if (d.last_error) {
-        errEl.textContent = d.last_error;
-        errEl.classList.add('has-error');
+      // Sidebar Engine Indicator
+      const enginePulse = $('#engine-pulse-dot');
+      const engineText = $('#engine-status-text');
+      const engineSub = $('#engine-sub-text');
+      
+      if (d.paused) {
+        enginePulse.style.background = 'var(--amber)';
+        enginePulse.style.boxShadow = '0 0 10px var(--amber)';
+        engineText.textContent = 'Engine Pausado';
+      } else if (d.enabled) {
+        enginePulse.style.background = 'var(--emerald)';
+        enginePulse.style.boxShadow = '0 0 10px var(--emerald)';
+        engineText.textContent = 'Motor Activo';
       } else {
-        errEl.textContent = 'Sin errores recientes.';
-        errEl.classList.remove('has-error');
+        enginePulse.style.background = 'var(--rose)';
+        enginePulse.style.boxShadow = '0 0 10px var(--rose)';
+        engineText.textContent = 'Engine Detenido';
+      }
+      engineSub.textContent = `Intervalo: ${d.interval_seconds}s`;
+
+      // Overview Current Body
+      const overviewBody = $('#overview-current-body');
+      if (candidates.length === 0) {
+        overviewBody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding: 20px; color: var(--text-dim);">Sin candidatos pendientes</td></tr>`;
+      } else {
+        overviewBody.innerHTML = candidates.map(c => `
+          <tr>
+            <td>${fmtTime(c.timestamp)}</td>
+            <td><code class="code-pill">${fmt(c.deal_id)}</code></td>
+            <td><code class="code-pill">${fmt(c.chat_id)}</code></td>
+            <td>${c.reason}</td>
+          </tr>
+        `).join('');
       }
 
-      var curHTML = (d.current_candidates || []).map(function(r) {
-        return '<tr><td>' + fmtTime(r.timestamp) + '</td><td>' + fmt(r.deal_id) +
-               '</td><td>' + fmt(r.chat_id) + '</td><td>' + r.reason +
-               '</td><td>' + ((r.actions || []).join(', ') || '\u2014') + '</td></tr>';
-      }).join('');
-      $('#current-candidates').innerHTML = curHTML || "<tr><td colspan='5' class='empty-row'>Sin candidatos actuales</td></tr>";
+      // Recent Activity Bodies
+      const recent = d.recent || [];
+      const overviewRecentBody = $('#overview-recent-body');
+      const fullHistoryBody = $('#full-history-body');
 
-      var histHTML = (d.recent || []).map(function(r) {
-        return '<tr><td>' + fmtTime(r.timestamp) + '</td><td class="s-' + r.status + '">' + r.status +
-               '</td><td>' + fmt(r.deal_id) + '</td><td>' + fmt(r.chat_id) +
-               '</td><td>' + r.reason + '</td><td>' + ((r.actions || []).join(', ') || '\u2014') + '</td></tr>';
-      }).join('');
-      $('#recent-results').innerHTML = histHTML || "<tr><td colspan='6' class='empty-row'>Sin resultados todav\u00eda</td></tr>";
+      if (recent.length === 0) {
+        overviewRecentBody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding: 20px; color: var(--text-dim);">Sin registros recientes</td></tr>`;
+        fullHistoryBody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 32px; color: var(--text-dim);">Sin interacciones capturadas</td></tr>`;
+      } else {
+        overviewRecentBody.innerHTML = recent.slice(0, 5).map(r => `
+          <tr>
+            <td>${fmtTime(r.timestamp)}</td>
+            <td><span class="status-chip chip-${r.status}">${r.status}</span></td>
+            <td><code class="code-pill">${fmt(r.deal_id)}</code></td>
+            <td>${(r.actions || []).join(', ') || '—'}</td>
+          </tr>
+        `).join('');
+
+        fullHistoryBody.innerHTML = recent.map(r => `
+          <tr>
+            <td>${fmtTime(r.timestamp)}</td>
+            <td><span class="status-chip chip-${r.status}">${r.status}</span></td>
+            <td><code class="code-pill">${fmt(r.deal_id)}</code></td>
+            <td><code class="code-pill">${fmt(r.chat_id)}</code></td>
+            <td>${r.reason}</td>
+            <td>${(r.actions || []).join(', ') || '—'}</td>
+          </tr>
+        `).join('');
+      }
     }
 
     async function loadScanner() {
       try {
-        var res = await fetch('/api/bitrix/scanner', {headers: headers});
+        const res = await fetch('/api/bitrix/scanner', { headers });
         if (res.ok) renderScanner(await res.json());
-      } catch(e) { /* silent */ }
+      } catch(e) { console.error(e); }
     }
 
-    /* ── Settings ── */
+    /* ── Settings Form ── */
     async function loadSettings() {
       try {
-        var res = await fetch('/api/bitrix/settings', {headers: headers});
+        const res = await fetch('/api/bitrix/settings', { headers });
         if (!res.ok) return;
-        var d = await res.json();
-        var v = d.values || {};
-        $('#setting-mode').value = v.BITRIX_AUTOMATION_MODE || 'dry_run';
-        $('#setting-assignment-stage').value = v.BITRIX_ASSIGNMENT_STAGE_ID || '';
-        $('#setting-target-stage').value = v.BITRIX_TARGET_STAGE_ID || '';
-        $('#setting-category').value = v.BITRIX_CATEGORY_ID != null ? v.BITRIX_CATEGORY_ID : '';
-        $('#setting-operator').value = v.BITRIX_OPERATOR_USER_ID != null ? v.BITRIX_OPERATOR_USER_ID : '';
-        $('#setting-interval').value = v.BITRIX_SCAN_INTERVAL_SECONDS != null ? v.BITRIX_SCAN_INTERVAL_SECONDS : '';
-        $('#setting-limit').value = v.BITRIX_SCAN_LIMIT != null ? v.BITRIX_SCAN_LIMIT : '';
-        $('#setting-scan-enabled').value = String(v.BITRIX_SCAN_ENABLED != null ? v.BITRIX_SCAN_ENABLED : 'true');
-        $('#setting-connectors').value = v.BITRIX_ALLOWED_CONNECTORS || '';
-        $('#setting-webhook').value = v.BITRIX_WEBHOOK_BASE_URL || '';
-        $('#setting-message').value = v.BITRIX_GREETING_MESSAGE || '';
-      } catch(e) { /* silent */ }
+        const data = await res.json();
+        const v = data.values || {};
+
+        $('#cfg-mode').value = v.BITRIX_AUTOMATION_MODE || 'dry_run';
+        $('#cfg-assignment-stage').value = v.BITRIX_ASSIGNMENT_STAGE_ID || '';
+        $('#cfg-target-stage').value = v.BITRIX_TARGET_STAGE_ID || '';
+        $('#cfg-category-id').value = v.BITRIX_CATEGORY_ID != null ? v.BITRIX_CATEGORY_ID : '';
+        $('#cfg-operator-id').value = v.BITRIX_OPERATOR_USER_ID != null ? v.BITRIX_OPERATOR_USER_ID : '';
+        $('#cfg-interval').value = v.BITRIX_SCAN_INTERVAL_SECONDS != null ? v.BITRIX_SCAN_INTERVAL_SECONDS : '';
+        $('#cfg-limit').value = v.BITRIX_SCAN_LIMIT != null ? v.BITRIX_SCAN_LIMIT : '';
+        $('#cfg-scan-enabled').value = String(v.BITRIX_SCAN_ENABLED != null ? v.BITRIX_SCAN_ENABLED : 'true');
+        $('#cfg-connectors').value = v.BITRIX_ALLOWED_CONNECTORS || '';
+        $('#cfg-webhook').value = v.BITRIX_WEBHOOK_BASE_URL || '';
+        $('#cfg-greeting').value = v.BITRIX_GREETING_MESSAGE || '';
+      } catch(e) { console.error(e); }
     }
 
-    async function saveSettings() {
-      var btn = $('#save-settings');
-      var out = $('#settings-output');
+    $('#save-settings-btn').addEventListener('click', async () => {
+      const btn = $('#save-settings-btn');
       btn.disabled = true;
-      out.textContent = 'Guardando...';
-      var body = {
-        BITRIX_AUTOMATION_MODE: $('#setting-mode').value,
-        BITRIX_ASSIGNMENT_STAGE_ID: $('#setting-assignment-stage').value.trim(),
-        BITRIX_TARGET_STAGE_ID: $('#setting-target-stage').value.trim(),
-        BITRIX_CATEGORY_ID: $('#setting-category').value.trim(),
-        BITRIX_OPERATOR_USER_ID: $('#setting-operator').value.trim(),
-        BITRIX_SCAN_INTERVAL_SECONDS: $('#setting-interval').value.trim(),
-        BITRIX_SCAN_LIMIT: $('#setting-limit').value.trim(),
-        BITRIX_SCAN_ENABLED: $('#setting-scan-enabled').value,
-        BITRIX_ALLOWED_CONNECTORS: $('#setting-connectors').value.trim(),
-        BITRIX_GREETING_MESSAGE: $('#setting-message').value
+      const consoleEl = $('#settings-console');
+      consoleEl.textContent = 'Guardando configuración en el servidor...';
+
+      const payload = {
+        BITRIX_AUTOMATION_MODE: $('#cfg-mode').value,
+        BITRIX_ASSIGNMENT_STAGE_ID: $('#cfg-assignment-stage').value.trim(),
+        BITRIX_TARGET_STAGE_ID: $('#cfg-target-stage').value.trim(),
+        BITRIX_CATEGORY_ID: $('#cfg-category-id').value.trim(),
+        BITRIX_OPERATOR_USER_ID: $('#cfg-operator-id').value.trim(),
+        BITRIX_SCAN_INTERVAL_SECONDS: $('#cfg-interval').value.trim(),
+        BITRIX_SCAN_LIMIT: $('#cfg-limit').value.trim(),
+        BITRIX_SCAN_ENABLED: $('#cfg-scan-enabled').value,
+        BITRIX_ALLOWED_CONNECTORS: $('#cfg-connectors').value.trim(),
+        BITRIX_GREETING_MESSAGE: $('#cfg-greeting').value
       };
-      var wh = $('#setting-webhook').value.trim();
-      if (wh && wh.indexOf('...') === -1) body.BITRIX_WEBHOOK_BASE_URL = wh;
+
+      const wh = $('#cfg-webhook').value.trim();
+      if (wh && !wh.includes('...')) payload.BITRIX_WEBHOOK_BASE_URL = wh;
+
       try {
-        var res = await fetch('/api/bitrix/settings', {
+        const res = await fetch('/api/bitrix/settings', {
           method: 'PUT',
           headers: Object.assign({'content-type': 'application/json'}, headers),
-          body: JSON.stringify(body)
+          body: JSON.stringify(payload)
         });
-        var data = await res.json();
-        out.textContent = JSON.stringify(data, null, 2);
-        toast('Configuraci\u00f3n guardada', 'success');
+        const data = await res.json();
+        consoleEl.textContent = JSON.stringify(data, null, 2);
+        toast('Configuración guardada exitosamente', 'success');
         await loadStatus();
         await loadScanner();
       } catch(e) {
-        out.textContent = String(e);
-        toast('Error al guardar', 'error');
-      } finally {
-        btn.disabled = false;
-      }
-    }
-
-    async function clearSettings() {
-      var out = $('#settings-output');
-      out.textContent = 'Limpiando overrides...';
-      try {
-        var res = await fetch('/api/bitrix/settings', {method: 'DELETE', headers: headers});
-        var data = await res.json();
-        out.textContent = JSON.stringify(data, null, 2);
-        toast('Overrides limpiados', 'info');
-        await loadSettings();
-        await loadStatus();
-        await loadScanner();
-      } catch(e) {
-        toast('Error: ' + e.message, 'error');
-      }
-    }
-
-    async function postScanner(path) {
-      try {
-        var res = await fetch(path, {method: 'POST', headers: headers});
-        if (res.ok) {
-          var data = await res.json();
-          renderScanner(data.scanner || data);
-          if (path.indexOf('scan') > -1 && path.indexOf('scanner') === -1)
-            toast('Escaneo completado', 'success');
-          else if (path.indexOf('pause') > -1)
-            toast('Scanner pausado', 'info');
-          else if (path.indexOf('resume') > -1)
-            toast('Scanner reanudado', 'success');
-        }
-      } catch(e) { toast('Error: ' + e.message, 'error'); }
-    }
-
-    /* ── Events ── */
-    $('#check-form').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      var btn = $('#check-button');
-      var out = $('#check-output');
-      btn.disabled = true;
-      out.textContent = 'Probando...';
-      var body = {
-        deal_id: $('#deal-id').value.trim(),
-        chat_id: $('#chat-id').value.trim()
-      };
-      try {
-        var res = await fetch('/api/bitrix/check', {
-          method: 'POST',
-          headers: Object.assign({'content-type': 'application/json'}, headers),
-          body: JSON.stringify(body)
-        });
-        var data = await res.json();
-        out.textContent = JSON.stringify(data, null, 2);
-        toast('Resultado: ' + data.status, data.status === 'candidate' ? 'success' : 'info');
-      } catch(e) {
-        out.textContent = String(e);
-        toast('Error en prueba', 'error');
+        consoleEl.textContent = String(e);
+        toast('Error al guardar configuración', 'error');
       } finally {
         btn.disabled = false;
       }
     });
 
-    $('#scan-now').addEventListener('click', function() { postScanner('/api/bitrix/scan'); });
-    $('#pause-scanner').addEventListener('click', function() { postScanner('/api/bitrix/scanner/pause'); });
-    $('#resume-scanner').addEventListener('click', function() { postScanner('/api/bitrix/scanner/resume'); });
-    $('#save-settings').addEventListener('click', saveSettings);
-    $('#clear-settings').addEventListener('click', clearSettings);
+    $('#reset-settings-btn').addEventListener('click', async () => {
+      if (!confirm('¿Deseas restaurar la configuración original desde las variables de entorno de Render?')) return;
+      try {
+        const res = await fetch('/api/bitrix/settings', { method: 'DELETE', headers });
+        const data = await res.json();
+        $('#settings-console').textContent = JSON.stringify(data, null, 2);
+        toast('Overrides borrados. Ajustes restaurados.', 'info');
+        await loadSettings();
+        await loadStatus();
+        await loadScanner();
+      } catch(e) { toast(`Error: ${e.message}`, 'error'); }
+    });
 
-    /* ── Boot ── */
-    loadStatus();
-    loadScanner();
-    loadSettings();
-    setInterval(loadStatus, 15000);
-    setInterval(loadScanner, 4000);
+    /* ── Quick Actions ── */
+    $('#hero-scan-btn').addEventListener('click', async () => {
+      toast('Ejecutando escaneo manual...', 'info');
+      try {
+        const res = await fetch('/api/bitrix/scan', { method: 'POST', headers });
+        if (res.ok) {
+          const d = await res.json();
+          renderScanner(d.scanner || d);
+          toast('Escaneo manual finalizado', 'success');
+        }
+      } catch(e) { toast(`Error: ${e.message}`, 'error'); }
+    });
+
+    let isPaused = false;
+    $('#hero-toggle-btn').addEventListener('click', async () => {
+      const action = isPaused ? 'resume' : 'pause';
+      try {
+        const res = await fetch(`/api/bitrix/scanner/${action}`, { method: 'POST', headers });
+        if (res.ok) {
+          isPaused = !isPaused;
+          $('#hero-toggle-btn').textContent = isPaused ? 'Reanudar Engine' : 'Pausar Engine';
+          const d = await res.json();
+          renderScanner(d);
+          toast(isPaused ? 'Scanner pausado' : 'Scanner reanudado', isPaused ? 'info' : 'success');
+        }
+      } catch(e) { toast(`Error: ${e.message}`, 'error'); }
+    });
+
+    /* ── Sandbox Form ── */
+    $('#sandbox-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = $('#sb-test-btn');
+      const output = $('#sandbox-output');
+      btn.disabled = true;
+      output.textContent = 'Ejecutando simulación en Bitrix24 (Dry-run)...';
+
+      const body = {
+        deal_id: $('#sb-deal-id').value.trim(),
+        chat_id: $('#sb-chat-id').value.trim()
+      };
+
+      try {
+        const res = await fetch('/api/bitrix/check', {
+          method: 'POST',
+          headers: Object.assign({'content-type': 'application/json'}, headers),
+          body: JSON.stringify(body)
+        });
+        const data = await res.json();
+        output.textContent = JSON.stringify(data, null, 2);
+        toast(`Simulación completada: ${data.status}`, data.status === 'candidate' ? 'success' : 'info');
+      } catch(e) {
+        output.textContent = `Error: ${e.message}`;
+        toast('Error en simulación sandbox', 'error');
+      } finally {
+        btn.disabled = false;
+      }
+    });
+
+    /* ── Auto Loop ── */
+    async function init() {
+      await loadStatus();
+      await loadScanner();
+      await loadSettings();
+
+      setInterval(async () => {
+        await loadStatus();
+        await loadScanner();
+      }, 4000);
+    }
+
+    init();
   </script>
 </body>
 </html>
