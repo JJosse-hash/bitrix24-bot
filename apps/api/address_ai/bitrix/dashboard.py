@@ -161,6 +161,29 @@ async def bitrix_check(request: Request) -> dict[str, Any]:
     }
 
 
+@router.post("/api/bitrix/hermes/test")
+async def hermes_test_chat(request: Request) -> dict[str, Any]:
+    verify_dashboard_access(request)
+    body = await request.json()
+    user_message = body.get("message", "").strip()
+    session_id = body.get("session_id", "test-session-001")
+    if not user_message:
+        raise HTTPException(status_code=400, detail="Send 'message' field")
+
+    from address_ai.bitrix.hermes_sandbox import HermesSandboxSession
+    session = HermesSandboxSession(session_id=session_id)
+    response_text = session.process_user_message(user_message)
+    return {
+        "status": "ok",
+        "session_id": session_id,
+        "user_message": user_message,
+        "hermes_response": response_text,
+        "cobertura_validada": session.cobertura_validada,
+        "venta_simulada": session.venta_simulada,
+    }
+
+
+
 def verify_dashboard_access(request: Request) -> None:
     expected = os.getenv("BITRIX_DASHBOARD_TOKEN", "").strip()
     if not expected:
