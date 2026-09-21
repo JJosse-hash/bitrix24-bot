@@ -3,43 +3,44 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>AgentVentas AI — Executive Sales Operations Control Center</title>
+  <title>AgentVentas AI — Executive Sales Operations Center</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
-      /* Neutral & Flowing Color Palette */
-      --bg-base: #080a0f;
-      --bg-surface: #0f131d;
-      --panel-bg: rgba(16, 21, 32, 0.65);
-      --panel-border: rgba(255, 255, 255, 0.07);
-      --panel-border-hover: rgba(255, 255, 255, 0.18);
-      
-      /* Neutral Fluid Accents */
-      --accent-neutral: #e2e8f0;
-      --accent-indigo: #6366f1;
-      --accent-slate: #94a3b8;
-      --accent-gold: #f59e0b;
+      /* Light Neutral Palette */
+      --bg-base: #f8fafc;
+      --bg-surface: #ffffff;
+      --panel-bg: rgba(255, 255, 255, 0.85);
+      --panel-border: rgba(226, 232, 240, 0.9);
+      --panel-border-hover: rgba(148, 163, 184, 0.4);
+      --panel-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.04), 0 4px 12px -2px rgba(0, 0, 0, 0.02);
+
+      /* Accents */
+      --accent-slate: #0f172a;
+      --accent-muted: #64748b;
+      --accent-light: #f1f5f9;
       --emerald: #10b981;
-      --rose: #f43f5e;
-      --cyan: #38bdf8;
+      --emerald-bg: rgba(16, 185, 129, 0.08);
+      --rose: #ef4444;
+      --rose-bg: rgba(239, 68, 68, 0.08);
+      --amber: #f59e0b;
+      --amber-bg: rgba(245, 158, 11, 0.08);
 
-      /* Text Hierarchy */
-      --text-main: #f8fafc;
-      --text-muted: #94a3b8;
-      --text-dim: #64748b;
+      /* Typography Colors */
+      --text-main: #0f172a;
+      --text-muted: #475569;
+      --text-dim: #94a3b8;
 
-      /* Typography */
+      /* Fonts */
       --font-heading: 'Outfit', 'Plus Jakarta Sans', sans-serif;
       --font-body: 'Plus Jakarta Sans', 'Inter', sans-serif;
       --font-mono: 'JetBrains Mono', monospace;
 
-      --radius-xl: 20px;
-      --radius-lg: 14px;
-      --radius-md: 10px;
-      --radius-sm: 6px;
-      --sidebar-w: 265px;
+      --radius-xl: 18px;
+      --radius-lg: 12px;
+      --radius-md: 8px;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -51,355 +52,216 @@
       min-height: 100vh;
       overflow-x: hidden;
       -webkit-font-smoothing: antialiased;
-      position: relative;
+      background-image: 
+        radial-gradient(circle at 10% 0%, rgba(226, 232, 240, 0.6) 0%, transparent 40%),
+        radial-gradient(circle at 90% 100%, rgba(241, 245, 249, 0.8) 0%, transparent 50%);
     }
 
-    /* Fluid Moving Background Animation */
-    .fluid-bg-container {
-      position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden;
+    /* Floating Navigation Header Bar */
+    header.light-nav {
+      position: sticky; top: 16px; z-index: 100;
+      max-width: 1380px; margin: 0 auto 32px; padding: 0 16px;
     }
-    .fluid-orb {
-      position: absolute; border-radius: 50%; filter: blur(120px); opacity: 0.22;
-      animation: floatOrb 20s ease-in-out infinite alternate;
-    }
-    .orb-1 {
-      top: -10%; left: 15%; width: 55vw; height: 55vw;
-      background: radial-gradient(circle, rgba(99, 102, 241, 0.35) 0%, rgba(56, 189, 248, 0.1) 70%, transparent 100%);
-      animation-duration: 22s;
-    }
-    .orb-2 {
-      bottom: -15%; right: -5%; width: 60vw; height: 60vw;
-      background: radial-gradient(circle, rgba(16, 185, 129, 0.25) 0%, rgba(99, 102, 241, 0.12) 60%, transparent 100%);
-      animation-duration: 28s; animation-delay: -5s;
-    }
-    .orb-3 {
-      top: 40%; left: 40%; width: 40vw; height: 40vw;
-      background: radial-gradient(circle, rgba(245, 158, 11, 0.15) 0%, transparent 70%);
-      animation-duration: 25s; animation-delay: -10s;
+    .nav-container {
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--panel-border);
+      border-radius: var(--radius-xl);
+      padding: 12px 24px;
+      display: flex; align-items: center; justify-content: space-between;
+      box-shadow: 0 12px 32px -4px rgba(0, 0, 0, 0.05);
     }
 
-    @keyframes floatOrb {
-      0% { transform: translate(0, 0) scale(1); }
-      50% { transform: translate(4%, 6%) scale(1.08); }
-      100% { transform: translate(-3%, -4%) scale(0.95); }
-    }
-
-    /* App Structure */
-    .app-layout {
-      display: flex;
-      min-height: 100vh;
-      position: relative;
-      z-index: 1;
-    }
-
-    /* Sidebar Navigation */
-    aside.hud-sidebar {
-      width: var(--sidebar-w);
-      background: rgba(11, 14, 22, 0.75);
-      backdrop-filter: blur(28px) saturate(180%);
-      -webkit-backdrop-filter: blur(28px) saturate(180%);
-      border-right: 1px solid var(--panel-border);
-      display: flex; flex-direction: column;
-      position: fixed; top: 0; bottom: 0; left: 0;
-      z-index: 100;
-      box-shadow: 10px 0 40px rgba(0, 0, 0, 0.35);
-      transition: all 0.3s ease;
-    }
-
-    .hud-brand {
-      padding: 24px 22px;
-      display: flex; align-items: center; gap: 14px;
-      border-bottom: 1px solid var(--panel-border);
-    }
-
+    .brand-box { display: flex; align-items: center; gap: 12px; }
     .brand-icon {
-      width: 42px; height: 42px; border-radius: var(--radius-md);
-      background: linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(148, 163, 184, 0.7));
+      width: 38px; height: 38px; border-radius: var(--radius-md);
+      background: var(--accent-slate); color: #fff;
       display: flex; align-items: center; justify-content: center;
-      font-family: var(--font-heading); font-weight: 800; font-size: 15px; color: #090b10;
-      box-shadow: 0 6px 20px rgba(255, 255, 255, 0.15);
-      transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      font-family: var(--font-heading); font-weight: 800; font-size: 15px;
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
     }
-    .hud-brand:hover .brand-icon {
-      transform: rotate(6deg) scale(1.05);
-    }
+    .brand-name { font-family: var(--font-heading); font-size: 16px; font-weight: 700; color: var(--text-main); }
+    .brand-sub { font-size: 11px; color: var(--text-dim); font-weight: 500; }
 
-    .brand-title {
-      font-family: var(--font-heading); font-size: 16px; font-weight: 700;
-      letter-spacing: -0.3px; color: #fff;
-    }
-    .brand-tag {
-      font-size: 11px; font-weight: 500; color: var(--text-dim); letter-spacing: 0.3px;
-    }
-
-    /* Nav Links */
-    .hud-menu {
-      padding: 24px 14px; display: flex; flex-direction: column; gap: 6px; flex: 1;
-    }
-    .menu-cat {
-      font-family: var(--font-heading); font-size: 10px; font-weight: 700; color: var(--text-dim);
-      letter-spacing: 1.2px; text-transform: uppercase; padding: 14px 12px 6px;
-    }
+    /* Nav Pills */
+    .nav-tabs { display: flex; align-items: center; gap: 6px; background: #f1f5f9; padding: 5px; border-radius: var(--radius-lg); }
     .nav-btn {
-      display: flex; align-items: center; gap: 12px;
-      padding: 12px 14px; border-radius: var(--radius-md);
-      color: var(--text-muted); font-size: 13.5px; font-weight: 500;
-      cursor: pointer; border: 1px solid transparent;
-      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-      position: relative; text-decoration: none;
+      display: flex; align-items: center; gap: 8px;
+      padding: 9px 16px; border-radius: var(--radius-md);
+      color: var(--text-muted); font-size: 13px; font-weight: 600;
+      cursor: pointer; border: none; background: transparent;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1); text-decoration: none;
     }
-    .nav-btn svg { width: 18px; height: 18px; stroke-width: 1.8; color: var(--text-dim); transition: all 0.25s ease; }
-    .nav-btn:hover {
-      color: #fff; background: rgba(255, 255, 255, 0.04);
-      border-color: rgba(255, 255, 255, 0.06);
-      transform: translateX(3px);
-    }
-    .nav-btn:hover svg { color: var(--accent-neutral); }
+    .nav-btn svg { width: 16px; height: 16px; stroke-width: 2; color: var(--text-dim); transition: all 0.2s ease; }
+    .nav-btn:hover { color: var(--text-main); background: rgba(255, 255, 255, 0.6); }
     .nav-btn.active {
-      color: #fff; background: rgba(255, 255, 255, 0.07);
-      border-color: rgba(255, 255, 255, 0.12);
-      font-weight: 600;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+      color: var(--accent-slate); background: #ffffff;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
     }
-    .nav-btn.active svg { color: #fff; }
-    .nav-btn.active::before {
-      content: ''; position: absolute; left: -14px; top: 20%; bottom: 20%; width: 3px;
-      background: var(--text-main); border-radius: 0 4px 4px 0;
-      box-shadow: 0 0 12px var(--text-main);
-    }
+    .nav-btn.active svg { color: var(--accent-slate); }
 
-    /* Sensitive Animated Status Widget */
-    .status-widget {
-      margin: 18px; padding: 14px 16px; border-radius: var(--radius-lg);
-      background: rgba(255, 255, 255, 0.03); border: 1px solid var(--panel-border);
-      display: flex; align-items: center; gap: 14px;
-      transition: border-color 0.3s ease;
-    }
-    .status-widget:hover { border-color: rgba(255, 255, 255, 0.12); }
-    
-    .status-pulse-ring {
-      width: 26px; height: 26px; border-radius: 50%;
-      background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2);
-      display: flex; align-items: center; justify-content: center; position: relative;
-    }
-    .status-pulse-ring::before {
-      content: ''; position: absolute; inset: -4px; border-radius: 50%;
-      border: 1.5px solid rgba(16, 185, 129, 0.3); opacity: 0;
-      animation: sensitiveRing 2.4s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+    /* Status Indicator */
+    .nav-status { display: flex; align-items: center; gap: 14px; }
+    .status-pill {
+      display: flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 999px;
+      background: #f1f5f9; border: 1px solid #e2e8f0; font-size: 12px; font-weight: 600; color: var(--text-muted);
     }
     .pulse-dot {
       width: 8px; height: 8px; border-radius: 50%; background: var(--emerald);
-      box-shadow: 0 0 10px var(--emerald);
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2); animation: lightPulse 2s infinite;
     }
-    @keyframes sensitiveRing {
-      0% { transform: scale(0.7); opacity: 0.8; }
-      100% { transform: scale(1.6); opacity: 0; }
-    }
+    @keyframes lightPulse { 0% { transform: scale(0.95); } 50% { transform: scale(1.15); } 100% { transform: scale(0.95); } }
 
-    .status-info { flex: 1; }
-    .status-title { font-family: var(--font-heading); font-size: 10px; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.8px; }
-    .status-val { font-size: 12.5px; color: var(--emerald); font-weight: 600; display: flex; align-items: center; gap: 4px; }
-
-    /* Main Section */
-    main.hud-main {
-      margin-left: var(--sidebar-w); flex: 1; display: flex; flex-direction: column; min-width: 0;
-    }
-
-    /* Top Bar Header */
-    header.hud-header {
-      height: 72px; padding: 0 40px;
-      background: rgba(11, 14, 22, 0.6); backdrop-filter: blur(24px) saturate(180%);
-      border-bottom: 1px solid var(--panel-border);
-      display: flex; align-items: center; justify-content: space-between;
-      position: sticky; top: 0; z-index: 90;
-    }
-    .header-title-box { display: flex; flex-direction: column; gap: 2px; }
-    .header-title { font-family: var(--font-heading); font-size: 19px; font-weight: 700; color: #fff; letter-spacing: -0.4px; }
-    .header-sub { font-size: 12px; color: var(--text-dim); }
-
-    .header-ctrls { display: flex; align-items: center; gap: 16px; }
     .hud-badge {
-      display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 999px;
-      font-family: var(--font-heading); font-size: 11px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase;
-      border: 1px solid transparent; transition: all 0.3s ease;
+      display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px;
+      font-family: var(--font-heading); font-size: 11px; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase;
     }
-    .badge-live { background: rgba(244, 63, 94, 0.12); border-color: rgba(244, 63, 94, 0.25); color: var(--rose); }
-    .badge-dry { background: rgba(16, 185, 129, 0.12); border-color: rgba(16, 185, 129, 0.25); color: var(--emerald); }
+    .badge-live { background: var(--rose-bg); color: var(--rose); border: 1px solid rgba(239, 68, 68, 0.2); }
+    .badge-dry { background: var(--emerald-bg); color: var(--emerald); border: 1px solid rgba(16, 185, 129, 0.2); }
     .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
 
-    /* Viewport */
-    .viewport { padding: 36px 40px 60px; display: flex; flex-direction: column; gap: 28px; }
-    .tab-panel { display: none; flex-direction: column; gap: 28px; animation: smoothTabFade 0.4s cubic-bezier(0.16, 1, 0.3, 1); }
+    /* Main Container */
+    main.main-viewport {
+      max-width: 1380px; margin: 0 auto; padding: 0 16px 60px; display: flex; flex-direction: column; gap: 28px;
+    }
+    .tab-panel { display: none; flex-direction: column; gap: 28px; animation: slideUpFade 0.3s ease; }
     .tab-panel.active { display: flex; }
-    @keyframes smoothTabFade {
-      from { opacity: 0; transform: translateY(14px) scale(0.995); }
-      to { opacity: 1; transform: translateY(0) scale(1); }
-    }
+    @keyframes slideUpFade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* Flowing Neutral Hero Banner */
-    .tactical-banner {
-      background: linear-gradient(135deg, rgba(20, 26, 38, 0.75), rgba(15, 19, 29, 0.5));
-      backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px);
-      border: 1px solid var(--panel-border); border-top: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: var(--radius-xl); padding: 30px 36px;
-      position: relative; overflow: hidden; display: flex; justify-content: space-between; align-items: center; gap: 28px;
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+    /* Hero Light Banner */
+    .hero-banner {
+      background: #ffffff; border: 1px solid var(--panel-border);
+      border-radius: var(--radius-xl); padding: 32px 36px;
+      display: flex; justify-content: space-between; align-items: center; gap: 24px;
+      box-shadow: var(--panel-shadow); position: relative; overflow: hidden;
     }
-    .tactical-banner::before {
-      content: ''; position: absolute; inset: 0;
-      background: radial-gradient(circle at 90% 20%, rgba(255, 255, 255, 0.04) 0%, transparent 60%);
-      pointer-events: none;
+    .hero-banner::after {
+      content: ''; position: absolute; top: 0; right: 0; width: 300px; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(241, 245, 249, 0.8)); pointer-events: none;
     }
-    .banner-text h2 { font-family: var(--font-heading); font-size: 21px; font-weight: 700; margin-bottom: 6px; color: #fff; letter-spacing: -0.4px; }
-    .banner-text p { color: var(--text-muted); font-size: 13.5px; max-width: 680px; line-height: 1.65; }
+    .banner-content h1 { font-family: var(--font-heading); font-size: 22px; font-weight: 700; color: var(--text-main); margin-bottom: 6px; }
+    .banner-content p { color: var(--text-muted); font-size: 14px; max-width: 680px; line-height: 1.6; }
 
-    .banner-btns { display: flex; gap: 14px; position: relative; z-index: 2; }
+    .banner-actions { display: flex; gap: 12px; position: relative; z-index: 2; }
 
-    /* Sensitive Micro-Animated Buttons */
+    /* Clean Buttons */
     .hud-btn {
       display: inline-flex; align-items: center; justify-content: center; gap: 8px;
       height: 42px; padding: 0 22px; border-radius: var(--radius-md);
-      font-family: var(--font-heading); font-size: 12.5px; font-weight: 600; letter-spacing: 0.2px;
-      cursor: pointer; border: 1px solid transparent; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); white-space: nowrap;
-      position: relative; overflow: hidden; text-decoration: none;
+      font-family: var(--font-heading); font-size: 13px; font-weight: 600;
+      cursor: pointer; border: 1px solid transparent; transition: all 0.2s ease; white-space: nowrap; text-decoration: none;
     }
-    .hud-btn::after {
-      content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
-      transform: translateX(-100%); transition: transform 0.6s ease;
-    }
-    .hud-btn:hover::after { transform: translateX(100%); }
-
     .hud-btn-primary {
-      background: linear-gradient(135deg, #ffffff, #e2e8f0); color: #090b10;
-      box-shadow: 0 4px 20px rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.4);
+      background: var(--accent-slate); color: #ffffff;
+      box-shadow: 0 4px 14px rgba(15, 23, 42, 0.15);
     }
-    .hud-btn-primary:hover {
-      transform: translateY(-2px); box-shadow: 0 8px 28px rgba(255, 255, 255, 0.25);
-      background: linear-gradient(135deg, #ffffff, #f1f5f9);
-    }
+    .hud-btn-primary:hover { background: #1e293b; transform: translateY(-1px); box-shadow: 0 6px 18px rgba(15, 23, 42, 0.25); }
+
     .hud-btn-secondary {
-      background: rgba(255, 255, 255, 0.04); color: var(--text-main); border-color: var(--panel-border);
+      background: #f1f5f9; color: var(--text-main); border-color: #e2e8f0;
     }
-    .hud-btn-secondary:hover {
-      background: rgba(255, 255, 255, 0.08); border-color: rgba(255, 255, 255, 0.15); color: #fff;
-      transform: translateY(-2px);
-    }
+    .hud-btn-secondary:hover { background: #e2e8f0; color: #000; transform: translateY(-1px); }
+
     .hud-btn-danger {
-      background: rgba(244, 63, 94, 0.1); color: var(--rose); border-color: rgba(244, 63, 94, 0.25);
+      background: var(--rose-bg); color: var(--rose); border-color: rgba(239, 68, 68, 0.2);
     }
-    .hud-btn-danger:hover {
-      background: rgba(244, 63, 94, 0.2); border-color: var(--rose); transform: translateY(-2px);
-    }
+    .hud-btn-danger:hover { background: rgba(239, 68, 68, 0.15); transform: translateY(-1px); }
 
-    /* Executive Glass Metric Cards */
+    /* KPI Grid */
     .metrics-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
-    .hud-card {
-      background: var(--panel-bg); backdrop-filter: blur(28px) saturate(180%); -webkit-backdrop-filter: blur(28px);
-      border: 1px solid var(--panel-border); border-top: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: var(--radius-xl); padding: 24px 26px;
-      position: relative; transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1); overflow: hidden;
-      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.2);
+    .kpi-card {
+      background: #ffffff; border: 1px solid var(--panel-border);
+      border-radius: var(--radius-xl); padding: 24px;
+      box-shadow: var(--panel-shadow); transition: all 0.25s ease;
     }
-    .hud-card::before {
-      content: ''; position: absolute; inset: 0;
-      background: radial-gradient(circle at 50% 0%, rgba(255, 255, 255, 0.05), transparent 70%);
-      opacity: 0; transition: opacity 0.35s ease; pointer-events: none;
-    }
-    .hud-card:hover {
-      border-color: var(--panel-border-hover); transform: translateY(-4px) scale(1.005);
-      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
-    }
-    .hud-card:hover::before { opacity: 1; }
+    .kpi-card:hover { transform: translateY(-3px); border-color: var(--panel-border-hover); box-shadow: 0 16px 32px -8px rgba(0, 0, 0, 0.08); }
+    .kpi-label { font-family: var(--font-heading); font-size: 11px; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px; }
+    .kpi-val { font-family: var(--font-heading); font-size: 32px; font-weight: 800; color: var(--text-main); letter-spacing: -0.6px; margin-bottom: 4px; }
+    .kpi-sub { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
 
-    .card-label { font-family: var(--font-heading); font-size: 11px; font-weight: 700; color: var(--text-dim); letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 12px; }
-    .card-val { font-family: var(--font-heading); font-size: 30px; font-weight: 800; color: #fff; letter-spacing: -0.6px; margin-bottom: 6px; }
-    .card-sub { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 6px; }
-
-    /* Flow Stepper Card */
+    /* Process Flow Stepper */
     .flow-card {
-      background: var(--panel-bg); backdrop-filter: blur(28px); -webkit-backdrop-filter: blur(28px);
-      border: 1px solid var(--panel-border); border-top: 1px solid rgba(255, 255, 255, 0.1);
+      background: #ffffff; border: 1px solid var(--panel-border);
       border-radius: var(--radius-xl); padding: 28px 32px;
-      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.2); transition: border-color 0.3s ease;
+      box-shadow: var(--panel-shadow);
     }
-    .flow-card:hover { border-color: rgba(255, 255, 255, 0.12); }
-    .flow-title-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
-    .flow-title { font-family: var(--font-heading); font-size: 15px; font-weight: 700; color: #fff; letter-spacing: -0.3px; display: flex; align-items: center; gap: 10px; }
-    .flow-title-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--text-main); box-shadow: 0 0 12px var(--text-main); }
+    .flow-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+    .flow-title { font-family: var(--font-heading); font-size: 16px; font-weight: 700; color: var(--text-main); display: flex; align-items: center; gap: 10px; }
+    .flow-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent-slate); }
 
-    .stepper-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; position: relative; }
-    .stepper-box {
-      background: rgba(10, 14, 22, 0.5); border: 1px solid var(--panel-border); border-radius: var(--radius-lg); padding: 20px 18px;
-      display: flex; flex-direction: column; gap: 6px; position: relative; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    .stepper-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; }
+    .step-item {
+      background: #f8fafc; border: 1px solid #e2e8f0; border-radius: var(--radius-lg); padding: 18px 16px;
+      display: flex; flex-direction: column; gap: 6px; transition: all 0.2s ease;
     }
-    .stepper-box:hover { border-color: rgba(255, 255, 255, 0.2); background: rgba(255, 255, 255, 0.03); transform: translateY(-2px); }
-    .step-tag { font-family: var(--font-heading); font-size: 10px; font-weight: 700; color: var(--accent-slate); letter-spacing: 0.8px; text-transform: uppercase; }
-    .step-head { font-size: 14px; font-weight: 600; color: #fff; }
-    .step-desc { font-size: 11.5px; color: var(--text-dim); line-height: 1.45; }
+    .step-item:hover { background: #ffffff; border-color: #cbd5e1; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.04); }
+    .step-tag { font-family: var(--font-heading); font-size: 10px; font-weight: 700; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.8px; }
+    .step-title { font-size: 14px; font-weight: 600; color: var(--text-main); }
+    .step-desc { font-size: 12px; color: var(--text-muted); line-height: 1.4; }
 
     /* Split Grid */
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
 
     /* Data Tables */
-    .table-box { overflow-x: auto; border: 1px solid var(--panel-border); border-radius: var(--radius-lg); background: rgba(8, 11, 18, 0.4); }
-    table.hud-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
-    table.hud-table th {
-      background: rgba(15, 20, 32, 0.85); padding: 16px 18px; font-family: var(--font-heading); font-size: 10.5px; font-weight: 700;
-      color: var(--text-dim); letter-spacing: 0.8px; text-transform: uppercase; border-bottom: 1px solid var(--panel-border);
+    .table-container { overflow-x: auto; border: 1px solid #e2e8f0; border-radius: var(--radius-lg); background: #ffffff; }
+    table.light-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
+    table.light-table th {
+      background: #f8fafc; padding: 14px 18px; font-family: var(--font-heading); font-size: 11px; font-weight: 700;
+      color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.8px; border-bottom: 1px solid #e2e8f0;
     }
-    table.hud-table td { padding: 15px 18px; border-bottom: 1px solid rgba(255, 255, 255, 0.03); color: var(--text-muted); transition: color 0.2s ease; }
-    table.hud-table tbody tr { transition: all 0.2s ease; }
-    table.hud-table tbody tr:hover { background: rgba(255, 255, 255, 0.03); color: #fff; }
+    table.light-table td { padding: 14px 18px; border-bottom: 1px solid #f1f5f9; color: var(--text-muted); }
+    table.light-table tbody tr { transition: background 0.15s ease; }
+    table.light-table tbody tr:hover { background: #f8fafc; color: var(--text-main); }
 
     .chip {
-      display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 999px;
+      display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 999px;
       font-family: var(--font-mono); font-size: 11px; font-weight: 600; text-transform: uppercase;
     }
-    .chip-green { background: rgba(16, 185, 129, 0.12); color: var(--emerald); border: 1px solid rgba(16, 185, 129, 0.25); }
-    .chip-red { background: rgba(244, 63, 94, 0.12); color: var(--rose); border: 1px solid rgba(244, 63, 94, 0.25); }
-    .chip-dim { background: rgba(255, 255, 255, 0.05); color: var(--text-dim); border: 1px solid rgba(255, 255, 255, 0.08); }
+    .chip-green { background: var(--emerald-bg); color: var(--emerald); border: 1px solid rgba(16, 185, 129, 0.2); }
+    .chip-red { background: var(--rose-bg); color: var(--rose); border: 1px solid rgba(239, 68, 68, 0.2); }
+    .chip-dim { background: #f1f5f9; color: var(--text-muted); border: 1px solid #e2e8f0; }
 
-    code.code-tech {
+    code.code-pill {
       font-family: var(--font-mono); font-size: 11.5px; padding: 3px 8px; border-radius: 6px;
-      background: rgba(255, 255, 255, 0.05); color: var(--accent-cyan); border: 1px solid rgba(255, 255, 255, 0.08);
+      background: #f1f5f9; color: var(--accent-slate); border: 1px solid #cbd5e1; font-weight: 500;
     }
 
-    /* Forms */
-    .form-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+    /* Modern Light Forms */
+    .form-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
     .form-group { display: flex; flex-direction: column; gap: 8px; }
     .form-group.full { grid-column: 1 / -1; }
-    .hud-label { font-family: var(--font-heading); font-size: 11px; font-weight: 700; color: var(--text-muted); letter-spacing: 0.5px; text-transform: uppercase; }
+    .hud-label { font-family: var(--font-heading); font-size: 11px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
 
     input.hud-input, select.hud-input, textarea.hud-input {
       width: 100%; height: 44px; padding: 0 16px; border-radius: var(--radius-md);
-      background: rgba(8, 12, 20, 0.7); border: 1px solid var(--panel-border); color: #fff;
-      font-family: var(--font-mono); font-size: 12.5px; outline: none; transition: all 0.25s ease;
+      background: #ffffff; border: 1px solid #cbd5e1; color: var(--text-main);
+      font-family: var(--font-mono); font-size: 13px; outline: none; transition: all 0.2s ease;
     }
-    textarea.hud-input { height: 100px; padding: 14px 16px; resize: vertical; line-height: 1.5; }
+    textarea.hud-input { height: 100px; padding: 12px 16px; resize: vertical; line-height: 1.5; }
     input.hud-input:focus, select.hud-input:focus, textarea.hud-input:focus {
-      border-color: rgba(255, 255, 255, 0.3); box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.06); background: rgba(15, 22, 36, 0.9);
+      border-color: var(--accent-slate); box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.08); background: #ffffff;
     }
 
     .terminal {
-      background: #030508; border: 1px solid var(--panel-border); border-radius: var(--radius-lg); padding: 18px;
-      font-family: var(--font-mono); font-size: 12px; color: #6ee7b7; max-height: 260px; overflow-y: auto; white-space: pre-wrap; line-height: 1.65;
+      background: #0f172a; border: 1px solid #1e293b; border-radius: var(--radius-lg); padding: 18px;
+      font-family: var(--font-mono); font-size: 12px; color: #38bdf8; max-height: 260px; overflow-y: auto; white-space: pre-wrap; line-height: 1.6;
     }
 
-    /* Toast System */
-    #toast-wrap { position: fixed; bottom: 32px; right: 32px; display: flex; flex-direction: column-reverse; gap: 10px; z-index: 9999; pointer-events: none; }
+    /* Toasts */
+    #toast-wrap { position: fixed; bottom: 28px; right: 28px; display: flex; flex-direction: column-reverse; gap: 10px; z-index: 9999; pointer-events: none; }
     .toast-msg {
       padding: 14px 22px; border-radius: var(--radius-lg); font-family: var(--font-heading); font-size: 13px; font-weight: 600;
-      backdrop-filter: blur(28px); transform: translateX(50px); opacity: 0; transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1); pointer-events: auto;
-      box-shadow: 0 16px 36px rgba(0,0,0,0.5); border: 1px solid transparent;
+      backdrop-filter: blur(20px); transform: translateX(40px); opacity: 0; transition: all 0.3s ease; pointer-events: auto;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.12); border: 1px solid transparent;
     }
     .toast-msg.show { transform: translateX(0); opacity: 1; }
-    .t-success { background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.4); color: var(--emerald); }
-    .t-error { background: rgba(244, 63, 94, 0.15); border-color: rgba(244, 63, 94, 0.4); color: var(--rose); }
-    .t-info { background: rgba(255, 255, 255, 0.12); border-color: rgba(255, 255, 255, 0.25); color: #fff; }
+    .t-success { background: #ffffff; border-color: var(--emerald); color: var(--emerald); }
+    .t-error { background: #ffffff; border-color: var(--rose); color: var(--rose); }
+    .t-info { background: #ffffff; border-color: var(--accent-slate); color: var(--accent-slate); }
 
     @media (max-width: 1024px) {
-      aside.hud-sidebar { transform: translateX(-100%); }
-      main.hud-main { margin-left: 0; }
+      .nav-container { flex-direction: column; gap: 16px; align-items: stretch; }
+      .nav-tabs { overflow-x: auto; }
       .metrics-row { grid-template-columns: repeat(2, 1fr); }
       .stepper-grid { grid-template-columns: 1fr; }
       .grid-2 { grid-template-columns: 1fr; }
@@ -408,348 +270,320 @@
   </style>
 </head>
 <body>
-  <!-- Ambient Dynamic Flow Background -->
-  <div class="fluid-bg-container">
-    <div class="fluid-orb orb-1"></div>
-    <div class="fluid-orb orb-2"></div>
-    <div class="fluid-orb orb-3"></div>
-  </div>
-
   <div id="toast-wrap"></div>
 
-  <div class="app-layout">
-    
-    <!-- Sidebar Navigation Deck -->
-    <aside class="hud-sidebar">
-      <div class="hud-brand">
+  <!-- Floating Light Header -->
+  <header class="light-nav">
+    <div class="nav-container">
+      <div class="brand-box">
         <div class="brand-icon">AV</div>
         <div>
-          <div class="brand-title">AgentVentas</div>
-          <div class="brand-tag">Bitrix24 Bot v0.3</div>
+          <div class="brand-name">AgentVentas AI</div>
+          <div class="brand-sub">Bitrix24 Automated Operations</div>
         </div>
       </div>
 
-      <nav class="hud-menu">
-        <div class="menu-cat">Operaciones</div>
-        <a class="nav-btn active" data-tab="tab-overview">
+      <nav class="nav-tabs">
+        <button class="nav-btn active" data-tab="tab-overview">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
           Command Hub
-        </a>
-        <a class="nav-btn" data-tab="tab-monitor">
+        </button>
+        <button class="nav-btn" data-tab="tab-monitor">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
           Live Tracker
-        </a>
-
-        <div class="menu-cat">Configuración</div>
-        <a class="nav-btn" data-tab="tab-settings">
+        </button>
+        <button class="nav-btn" data-tab="tab-settings">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
           Automation Rules
-        </a>
-
-        <div class="menu-cat">Diagnósticos</div>
-        <a class="nav-btn" data-tab="tab-sandbox">
+        </button>
+        <button class="nav-btn" data-tab="tab-sandbox">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="m8 3 4 8 5-5 5 15H2L8 3z"/></svg>
           Simulation Sandbox
-        </a>
-        <a class="nav-btn" data-tab="tab-system">
+        </button>
+        <button class="nav-btn" data-tab="tab-system">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
           System Telemetry
-        </a>
+        </button>
       </nav>
 
-      <!-- Sensitive Pulsing Status Indicator -->
-      <div class="status-widget">
-        <div class="status-pulse-ring">
+      <div class="nav-status">
+        <div class="status-pill">
           <div class="pulse-dot"></div>
+          <span id="sidebar-bot-status">Online 5s</span>
         </div>
-        <div class="status-info">
-          <div class="status-title">Bot Engine</div>
-          <div class="status-val" id="sidebar-bot-status">Online 5s</div>
+        <div id="mode-badge" class="hud-badge badge-dry">
+          <span class="badge-dot"></span>
+          <span id="mode-text">DRY RUN</span>
         </div>
       </div>
-    </aside>
+    </div>
+  </header>
 
-    <!-- Main Section -->
-    <main class="hud-main">
+  <!-- Main Viewport -->
+  <main class="main-viewport">
+    
+    <!-- Hidden element for compatibility with title updater -->
+    <div id="deck-title" style="display:none;">Command Hub</div>
+
+    <!-- TAB 1: COMMAND HUB -->
+    <div id="tab-overview" class="tab-panel active">
       
-      <!-- Topbar Header -->
-      <header class="hud-header">
-        <div class="header-title-box">
-          <div class="header-title" id="deck-title">Command Hub</div>
-          <div class="header-sub">Bitrix24 Automated Sales Operations System</div>
+      <div class="hero-banner">
+        <div class="banner-content">
+          <h1>Bitrix24 Autonomous Lead Engine</h1>
+          <p>Captura prospectos entrantes en tiempo real, asigna ejecutivos comerciales automáticamente y responde sin latencia.</p>
         </div>
-
-        <div class="header-ctrls">
-          <div id="mode-badge" class="hud-badge badge-dry">
-            <span class="badge-dot"></span>
-            <span id="mode-text">DRY RUN</span>
-          </div>
+        <div class="banner-actions">
+          <button id="btn-scan" class="hud-btn hud-btn-primary">⚡ Scan Inmediato</button>
+          <button id="btn-toggle" class="hud-btn hud-btn-secondary">⏸ Pausar Bot</button>
         </div>
-      </header>
-
-      <div class="viewport">
-        
-        <!-- TAB 1: COMMAND HUB -->
-        <div id="tab-overview" class="tab-panel active">
-          
-          <div class="tactical-banner">
-            <div class="banner-text">
-              <h2>Bitrix24 Lead Claiming Engine</h2>
-              <p>Captura prospectos entrantes en tiempo real, asigna asesores comerciales automáticamente y envía el primer mensaje de bienvenida sin latencia.</p>
-            </div>
-            <div class="banner-btns">
-              <button id="btn-scan" class="hud-btn hud-btn-primary">⚡ Scan Inmediato</button>
-              <button id="btn-toggle" class="hud-btn hud-btn-secondary">⏸ Pausar Bot</button>
-            </div>
-          </div>
-
-          <!-- Executive KPI Cards -->
-          <div class="metrics-row">
-            <div class="hud-card">
-              <div class="card-label">Estado Engine</div>
-              <div class="card-val" id="kpi-state" style="color:var(--emerald);">RUNNING</div>
-              <div class="card-sub"><span id="kpi-interval">5s</span> frecuencia de barrido</div>
-            </div>
-            <div class="hud-card">
-              <div class="card-label">Leads Candidatos</div>
-              <div class="card-val" id="kpi-candidates" style="color:var(--cyan);">0</div>
-              <div class="card-sub">Esperando auto-asignación</div>
-            </div>
-            <div class="hud-card">
-              <div class="card-label">ID Operador</div>
-              <div class="card-val" id="kpi-operator" style="color:var(--accent-neutral);">&mdash;</div>
-              <div class="card-sub">Asesor Bitrix24 asignado</div>
-            </div>
-            <div class="hud-card">
-              <div class="card-label">Etapa Destino CRM</div>
-              <div class="card-val" id="kpi-stage" style="color:var(--accent-gold);">&mdash;</div>
-              <div class="card-sub">Fase de seguimiento</div>
-            </div>
-          </div>
-
-          <!-- Flow Process Timeline -->
-          <div class="flow-card">
-            <div class="flow-title-bar">
-              <div class="flow-title"><span class="flow-title-dot"></span> Flujo de Procesamiento Autónomo</div>
-              <span class="hud-badge badge-dry">Auto-Pipeline</span>
-            </div>
-
-            <div class="stepper-grid">
-              <div class="stepper-box">
-                <span class="step-tag">Paso 01</span>
-                <div class="step-head">Bitrix Webhook</div>
-                <div class="step-desc">Captura del evento en etapa origen</div>
-              </div>
-              <div class="stepper-box">
-                <span class="step-tag">Paso 02</span>
-                <div class="step-head">Filtro Conector</div>
-                <div class="step-desc">Verificación del canal de entrada</div>
-              </div>
-              <div class="stepper-box">
-                <span class="step-tag">Paso 03</span>
-                <div class="step-head">Auto-Claim</div>
-                <div class="step-desc">Asignación al operador configurado</div>
-              </div>
-              <div class="stepper-box">
-                <span class="step-tag">Paso 04</span>
-                <div class="step-head">Avance CRM</div>
-                <div class="step-desc">Transición automática a etapa destino</div>
-              </div>
-              <div class="stepper-box">
-                <span class="step-tag">Paso 05</span>
-                <div class="step-head">Auto-Respuesta</div>
-                <div class="step-desc">Envío del script de bienvenida</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Tables Grid -->
-          <div class="grid-2">
-            <div class="flow-card">
-              <div class="flow-title-bar">
-                <div class="flow-title"><span class="flow-title-dot"></span> Candidatos Activos</div>
-                <span id="cand-count-badge" class="chip chip-green">0 Activos</span>
-              </div>
-              <div class="table-box">
-                <table class="hud-table">
-                  <thead><tr><th>Hora</th><th>Deal</th><th>Chat</th><th>Motivo</th></tr></thead>
-                  <tbody id="tbl-current-body">
-                    <tr><td colspan="4" style="text-align:center; padding:20px; color:var(--text-dim);">Sin candidatos pendientes</td></tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
-            <div class="flow-card">
-              <div class="flow-title-bar">
-                <div class="flow-title"><span class="flow-title-dot"></span> Últimas Acciones</div>
-                <span class="chip chip-dim">Historial</span>
-              </div>
-              <div class="table-box">
-                <table class="hud-table">
-                  <thead><tr><th>Hora</th><th>Estado</th><th>Deal</th><th>Acciones</th></tr></thead>
-                  <tbody id="tbl-recent-body">
-                    <tr><td colspan="4" style="text-align:center; padding:20px; color:var(--text-dim);">Sin interacciones aún</td></tr>
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-        </div>
-
-
-        <!-- TAB 2: LIVE STREAM MONITOR -->
-        <div id="tab-monitor" class="tab-panel">
-          <div class="flow-card">
-            <div class="flow-title-bar">
-              <div class="flow-title"><span class="flow-title-dot"></span> Telemetría & Monitor Completo</div>
-              <div style="display:flex; gap:12px;">
-                <input id="search-input" class="hud-input" style="width:250px;" placeholder="🔍 Filtrar Deal o Chat ID...">
-                <button id="refresh-mon-btn" class="hud-btn hud-btn-secondary">Actualizar</button>
-              </div>
-            </div>
-
-            <div class="table-box">
-              <table class="hud-table">
-                <thead>
-                  <tr><th>Timestamp</th><th>Estado</th><th>Deal ID</th><th>Chat ID</th><th>Diagnóstico</th><th>Acciones Ejecutadas</th></tr>
-                </thead>
-                <tbody id="tbl-full-monitor">
-                  <tr><td colspan="6" style="text-align:center; padding:30px; color:var(--text-dim);">Cargando telemetría...</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-
-        <!-- TAB 3: RULES & CONFIG -->
-        <div id="tab-settings" class="tab-panel">
-          <div class="flow-card">
-            <div class="flow-title-bar">
-              <div class="flow-title"><span class="flow-title-dot"></span> Reglas de Automatización En Vivo</div>
-              <div style="display:flex; gap:12px;">
-                <button id="save-cfg-btn" class="hud-btn hud-btn-primary">Guardar Cambios</button>
-                <button id="reset-cfg-btn" class="hud-btn hud-btn-danger">Borrar Overrides</button>
-              </div>
-            </div>
-
-            <div class="form-grid-3">
-              <div class="form-group">
-                <label class="hud-label">Modo Operativo</label>
-                <select id="cfg-mode" class="hud-input">
-                  <option value="dry_run">dry_run (Simulación)</option>
-                  <option value="live">live (Producción Bitrix24)</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label class="hud-label">Etapa Origen (Asignación)</label>
-                <input id="cfg-stage-src" class="hud-input" placeholder="C16:UC_GIKKS8">
-              </div>
-
-              <div class="form-group">
-                <label class="hud-label">Etapa Destino (Target)</label>
-                <input id="cfg-stage-dst" class="hud-input" placeholder="C16:UC_L8W7U1">
-              </div>
-
-              <div class="form-group">
-                <label class="hud-label">ID Categoría CRM</label>
-                <input id="cfg-category" class="hud-input" placeholder="16">
-              </div>
-
-              <div class="form-group">
-                <label class="hud-label">ID Operador / Asesor</label>
-                <input id="cfg-operator" class="hud-input" placeholder="2381716">
-              </div>
-
-              <div class="form-group">
-                <label class="hud-label">Intervalo Scanner (seg)</label>
-                <input id="cfg-interval" class="hud-input" type="number" placeholder="5">
-              </div>
-
-              <div class="form-group">
-                <label class="hud-label">Límite por Vuelta</label>
-                <input id="cfg-limit" class="hud-input" type="number" placeholder="8">
-              </div>
-
-              <div class="form-group">
-                <label class="hud-label">Bot Scanner Habilitado</label>
-                <select id="cfg-scan-enabled" class="hud-input">
-                  <option value="true">True (Activo)</option>
-                  <option value="false">False (Desactivado)</option>
-                </select>
-              </div>
-
-              <div class="form-group">
-                <label class="hud-label">Conectores Permitidos</label>
-                <input id="cfg-connectors" class="hud-input" placeholder="opcional">
-              </div>
-
-              <div class="form-group full">
-                <label class="hud-label">URL Webhook Bitrix24</label>
-                <input id="cfg-webhook" class="hud-input" placeholder="https://tu-dominio.bitrix24.es/rest/1/xxxxxxxx/">
-              </div>
-
-              <div class="form-group full">
-                <label class="hud-label">Mensaje Automático de Bienvenida</label>
-                <textarea id="cfg-greeting" class="hud-input" placeholder="Mensaje inicial enviado al prospecto..."></textarea>
-              </div>
-            </div>
-
-            <div style="margin-top:24px;">
-              <label class="hud-label" style="margin-bottom:8px;">Runtime Server Log</label>
-              <div id="cfg-console" class="terminal">Los ajustes guardados aquí surten efecto inmediato.</div>
-            </div>
-          </div>
-        </div>
-
-
-        <!-- TAB 4: SIMULATION SANDBOX -->
-        <div id="tab-sandbox" class="tab-panel">
-          <div class="flow-card">
-            <div class="flow-title-bar">
-              <div class="flow-title"><span class="flow-title-dot"></span> Simulation & Test Deck</div>
-            </div>
-
-            <form id="sb-form" style="display:grid; grid-template-columns: 1fr 1fr auto; gap:16px; align-items:end;">
-              <div class="form-group">
-                <label class="hud-label">Deal ID</label>
-                <input id="sb-deal" class="hud-input" placeholder="Ej: 2804388">
-              </div>
-              <div class="form-group">
-                <label class="hud-label">Chat ID</label>
-                <input id="sb-chat" class="hud-input" placeholder="Ej: 2758584">
-              </div>
-              <button type="submit" class="hud-btn hud-btn-primary">Ejecutar Simulación</button>
-            </form>
-
-            <div style="margin-top:24px;">
-              <label class="hud-label" style="margin-bottom:8px;">Diagnostic Output</label>
-              <div id="sb-output" class="terminal">Esperando simulación...</div>
-            </div>
-          </div>
-        </div>
-
-
-        <!-- TAB 5: TELEMETRY & HEALTH -->
-        <div id="tab-system" class="tab-panel">
-          <div class="grid-2">
-            <div class="flow-card">
-              <div class="flow-title-bar"><div class="flow-title"><span class="flow-title-dot"></span> Endpoints Backend</div></div>
-              <div id="sys-endpoints" style="color:var(--text-muted); font-size:13px; line-height:1.7;">Cargando datos...</div>
-            </div>
-            <div class="flow-card">
-              <div class="flow-title-bar"><div class="flow-title"><span class="flow-title-dot"></span> Estado de Seguridad</div></div>
-              <div id="sys-security" style="color:var(--text-muted); font-size:13px; line-height:1.7;">Cargando datos...</div>
-            </div>
-          </div>
-        </div>
-
       </div>
-    </main>
-  </div>
+
+      <!-- KPI Grid -->
+      <div class="metrics-row">
+        <div class="kpi-card">
+          <div class="kpi-label">Estado Engine</div>
+          <div class="kpi-val" id="kpi-state" style="color:var(--emerald);">RUNNING</div>
+          <div class="kpi-sub"><span id="kpi-interval">5s</span> frecuencia de barrido</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Leads Candidatos</div>
+          <div class="kpi-val" id="kpi-candidates" style="color:var(--accent-slate);">0</div>
+          <div class="kpi-sub">Esperando auto-asignación</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">ID Operador</div>
+          <div class="kpi-val" id="kpi-operator" style="color:var(--accent-slate);">&mdash;</div>
+          <div class="kpi-sub">Asesor Bitrix24 asignado</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">Etapa Destino CRM</div>
+          <div class="kpi-val" id="kpi-stage" style="color:var(--amber);">&mdash;</div>
+          <div class="kpi-sub">Fase de seguimiento</div>
+        </div>
+      </div>
+
+      <!-- Process Flow Stepper -->
+      <div class="flow-card">
+        <div class="flow-head">
+          <div class="flow-title"><span class="flow-dot"></span> Flujo de Procesamiento Autónomo</div>
+          <span class="hud-badge badge-dry">Auto-Pipeline</span>
+        </div>
+
+        <div class="stepper-grid">
+          <div class="step-item">
+            <span class="step-tag">Paso 01</span>
+            <div class="step-title">Bitrix Webhook</div>
+            <div class="step-desc">Captura de eventos en tiempo real</div>
+          </div>
+          <div class="step-item">
+            <span class="step-tag">Paso 02</span>
+            <div class="step-title">Filtro Conector</div>
+            <div class="step-desc">Verificación del canal de entrada</div>
+          </div>
+          <div class="step-item">
+            <span class="step-tag">Paso 03</span>
+            <div class="step-title">Auto-Claim</div>
+            <div class="step-desc">Asignación al operador oficial</div>
+          </div>
+          <div class="step-item">
+            <span class="step-tag">Paso 04</span>
+            <div class="step-title">Avance CRM</div>
+            <div class="step-desc">Cambio automático de etapa CRM</div>
+          </div>
+          <div class="step-item">
+            <span class="step-tag">Paso 05</span>
+            <div class="step-title">Auto-Respuesta</div>
+            <div class="step-desc">Envío del mensaje de bienvenida</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tables Split Grid -->
+      <div class="grid-2">
+        <div class="flow-card">
+          <div class="flow-head">
+            <div class="flow-title"><span class="flow-dot"></span> Candidatos Activos</div>
+            <span id="cand-count-badge" class="chip chip-green">0 Activos</span>
+          </div>
+          <div class="table-container">
+            <table class="light-table">
+              <thead><tr><th>Hora</th><th>Deal</th><th>Chat</th><th>Motivo</th></tr></thead>
+              <tbody id="tbl-current-body">
+                <tr><td colspan="4" style="text-align:center; padding:20px; color:var(--text-dim);">Sin candidatos pendientes</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="flow-card">
+          <div class="flow-head">
+            <div class="flow-title"><span class="flow-dot"></span> Últimas Acciones</div>
+            <span class="chip chip-dim">Historial</span>
+          </div>
+          <div class="table-container">
+            <table class="light-table">
+              <thead><tr><th>Hora</th><th>Estado</th><th>Deal</th><th>Acciones</th></tr></thead>
+              <tbody id="tbl-recent-body">
+                <tr><td colspan="4" style="text-align:center; padding:20px; color:var(--text-dim);">Sin interacciones aún</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+
+    <!-- TAB 2: LIVE STREAM MONITOR -->
+    <div id="tab-monitor" class="tab-panel">
+      <div class="flow-card">
+        <div class="flow-head">
+          <div class="flow-title"><span class="flow-dot"></span> Telemetría & Monitor Completo</div>
+          <div style="display:flex; gap:12px;">
+            <input id="search-input" class="hud-input" style="width:250px;" placeholder="🔍 Buscar Deal o Chat ID...">
+            <button id="refresh-mon-btn" class="hud-btn hud-btn-secondary">Actualizar</button>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table class="light-table">
+            <thead>
+              <tr><th>Timestamp</th><th>Estado</th><th>Deal ID</th><th>Chat ID</th><th>Diagnóstico</th><th>Acciones Ejecutadas</th></tr>
+            </thead>
+            <tbody id="tbl-full-monitor">
+              <tr><td colspan="6" style="text-align:center; padding:30px; color:var(--text-dim);">Cargando telemetría...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- TAB 3: RULES & CONFIG -->
+    <div id="tab-settings" class="tab-panel">
+      <div class="flow-card">
+        <div class="flow-head">
+          <div class="flow-title"><span class="flow-dot"></span> Reglas de Automatización En Vivo</div>
+          <div style="display:flex; gap:12px;">
+            <button id="save-cfg-btn" class="hud-btn hud-btn-primary">Guardar Cambios</button>
+            <button id="reset-cfg-btn" class="hud-btn hud-btn-danger">Borrar Overrides</button>
+          </div>
+        </div>
+
+        <div class="form-grid-3">
+          <div class="form-group">
+            <label class="hud-label">Modo Operativo</label>
+            <select id="cfg-mode" class="hud-input">
+              <option value="dry_run">dry_run (Simulación)</option>
+              <option value="live">live (Producción Bitrix24)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="hud-label">Etapa Origen (Asignación)</label>
+            <input id="cfg-stage-src" class="hud-input" placeholder="C16:UC_GIKKS8">
+          </div>
+
+          <div class="form-group">
+            <label class="hud-label">Etapa Destino (Target)</label>
+            <input id="cfg-stage-dst" class="hud-input" placeholder="C16:UC_L8W7U1">
+          </div>
+
+          <div class="form-group">
+            <label class="hud-label">ID Categoría CRM</label>
+            <input id="cfg-category" class="hud-input" placeholder="16">
+          </div>
+
+          <div class="form-group">
+            <label class="hud-label">ID Operador / Asesor</label>
+            <input id="cfg-operator" class="hud-input" placeholder="2381716">
+          </div>
+
+          <div class="form-group">
+            <label class="hud-label">Intervalo Scanner (seg)</label>
+            <input id="cfg-interval" class="hud-input" type="number" placeholder="5">
+          </div>
+
+          <div class="form-group">
+            <label class="hud-label">Límite por Vuelta</label>
+            <input id="cfg-limit" class="hud-input" type="number" placeholder="8">
+          </div>
+
+          <div class="form-group">
+            <label class="hud-label">Bot Scanner Habilitado</label>
+            <select id="cfg-scan-enabled" class="hud-input">
+              <option value="true">True (Activo)</option>
+              <option value="false">False (Desactivado)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="hud-label">Conectores Permitidos</label>
+            <input id="cfg-connectors" class="hud-input" placeholder="opcional">
+          </div>
+
+          <div class="form-group full">
+            <label class="hud-label">URL Webhook Bitrix24</label>
+            <input id="cfg-webhook" class="hud-input" placeholder="https://tu-dominio.bitrix24.es/rest/1/xxxxxxxx/">
+          </div>
+
+          <div class="form-group full">
+            <label class="hud-label">Mensaje Automático de Bienvenida</label>
+            <textarea id="cfg-greeting" class="hud-input" placeholder="Mensaje inicial enviado al prospecto..."></textarea>
+          </div>
+        </div>
+
+        <div style="margin-top:24px;">
+          <label class="hud-label" style="margin-bottom:8px;">Runtime Server Log</label>
+          <div id="cfg-console" class="terminal">Los ajustes guardados aquí surten efecto inmediato.</div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- TAB 4: SIMULATION SANDBOX -->
+    <div id="tab-sandbox" class="tab-panel">
+      <div class="flow-card">
+        <div class="flow-head">
+          <div class="flow-title"><span class="flow-dot"></span> Simulation & Test Deck</div>
+        </div>
+
+        <form id="sb-form" style="display:grid; grid-template-columns: 1fr 1fr auto; gap:16px; align-items:end;">
+          <div class="form-group">
+            <label class="hud-label">Deal ID</label>
+            <input id="sb-deal" class="hud-input" placeholder="Ej: 2804388">
+          </div>
+          <div class="form-group">
+            <label class="hud-label">Chat ID</label>
+            <input id="sb-chat" class="hud-input" placeholder="Ej: 2758584">
+          </div>
+          <button type="submit" class="hud-btn hud-btn-primary">Ejecutar Simulación</button>
+        </form>
+
+        <div style="margin-top:24px;">
+          <label class="hud-label" style="margin-bottom:8px;">Diagnostic Output</label>
+          <div id="sb-output" class="terminal">Esperando simulación...</div>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- TAB 5: TELEMETRY & HEALTH -->
+    <div id="tab-system" class="tab-panel">
+      <div class="grid-2">
+        <div class="flow-card">
+          <div class="flow-head"><div class="flow-title"><span class="flow-dot"></span> Endpoints Backend</div></div>
+          <div id="sys-endpoints" style="color:var(--text-muted); font-size:13px; line-height:1.7;">Cargando datos...</div>
+        </div>
+        <div class="flow-card">
+          <div class="flow-head"><div class="flow-title"><span class="flow-dot"></span> Estado de Seguridad</div></div>
+          <div id="sys-security" style="color:var(--text-muted); font-size:13px; line-height:1.7;">Cargando datos...</div>
+        </div>
+      </div>
+    </div>
+
+  </main>
 
   <script>
     const params = new URLSearchParams(location.search);
@@ -778,7 +612,7 @@
       }, 3600);
     }
 
-    /* Tabs */
+    /* Tabs Switcher */
     $$('.nav-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const tab = btn.getAttribute('data-tab');
@@ -812,8 +646,8 @@
         $('#kpi-stage').textContent = fmt(d.target_stage_id);
 
         $('#sys-endpoints').innerHTML = `
-          <p style="margin-bottom:10px;">Health URL: <code class="code-tech">${d.health_url}</code></p>
-          <p style="margin-bottom:10px;">Event Webhook: <code class="code-tech">${d.event_url}</code></p>
+          <p style="margin-bottom:10px;">Health URL: <code class="code-pill">${d.health_url}</code></p>
+          <p style="margin-bottom:10px;">Event Webhook: <code class="code-pill">${d.event_url}</code></p>
           <p>Webhook State: <strong>${d.webhook_configured ? '✓ OK' : '❌ Pending'}</strong></p>
         `;
 
@@ -830,7 +664,7 @@
     /* Scanner Render */
     function renderScanner(d) {
       $('#kpi-state').textContent = d.paused ? 'PAUSED' : (d.enabled ? 'RUNNING' : 'STOPPED');
-      $('#kpi-state').style.color = d.paused ? 'var(--accent-gold)' : (d.enabled ? 'var(--emerald)' : 'var(--rose)');
+      $('#kpi-state').style.color = d.paused ? 'var(--amber)' : (d.enabled ? 'var(--emerald)' : 'var(--rose)');
       $('#kpi-interval').textContent = `${d.interval_seconds}s`;
 
       const cands = d.current_candidates || [];
@@ -846,8 +680,8 @@
         cands.map(c => `
           <tr>
             <td>${fmtTime(c.timestamp)}</td>
-            <td><code class="code-tech">${fmt(c.deal_id)}</code></td>
-            <td><code class="code-tech">${fmt(c.chat_id)}</code></td>
+            <td><code class="code-pill">${fmt(c.deal_id)}</code></td>
+            <td><code class="code-pill">${fmt(c.chat_id)}</code></td>
             <td>${c.reason}</td>
           </tr>
         `).join('');
@@ -867,7 +701,7 @@
           <tr>
             <td>${fmtTime(r.timestamp)}</td>
             <td><span class="chip ${r.status === 'candidate' || r.status === 'claimed' ? 'chip-green' : (r.status === 'error' ? 'chip-red' : 'chip-dim')}">${r.status}</span></td>
-            <td><code class="code-tech">${fmt(r.deal_id)}</code></td>
+            <td><code class="code-pill">${fmt(r.deal_id)}</code></td>
             <td>${(r.actions || []).join(', ') || '—'}</td>
           </tr>
         `).join('');
@@ -885,8 +719,8 @@
           <tr>
             <td>${fmtTime(r.timestamp)}</td>
             <td><span class="chip ${r.status === 'candidate' || r.status === 'claimed' ? 'chip-green' : (r.status === 'error' ? 'chip-red' : 'chip-dim')}">${r.status}</span></td>
-            <td><code class="code-tech">${fmt(r.deal_id)}</code></td>
-            <td><code class="code-tech">${fmt(r.chat_id)}</code></td>
+            <td><code class="code-pill">${fmt(r.deal_id)}</code></td>
+            <td><code class="code-pill">${fmt(r.chat_id)}</code></td>
             <td>${r.reason}</td>
             <td>${(r.actions || []).join(', ') || '—'}</td>
           </tr>
